@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package live;
+
+option go_package = "github.com/VaheMuradyan/Live/proto;live";
+
+service CoefficientService {
+  rpc StartSportUpdates(SportRequest) returns (SportResponse);
+}
+
+message SportRequest {
+  string sport = 1;
+  uint32 update_interval_seconds = 2;
+}
+
+message SportResponse {
+  bool success = 1;
+  string message = 2;
+  string sport = 3;
+}
