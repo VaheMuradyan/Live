@@ -55,9 +55,7 @@ func (cg *CoefficientGenerator) StartAllSportsGeneration() error {
 
 	intervals := []uint32{2, 3, 4}
 	for i, sport := range sports {
-		interval := intervals[i%len(intervals)]
-
-		if err := cg.startSportWithInterval(sport.Name, interval); err != nil {
+		if err := cg.startSportWithInterval(sport.Name, intervals[i]); err != nil {
 			fmt.Printf("Error starting %s: %v\n", sport.Name, err)
 			continue
 		}
@@ -72,10 +70,7 @@ func (cg *CoefficientGenerator) startSportWithInterval(sportName string, interva
 		UpdateIntervalSeconds: interval,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	resp, err := cg.client.StartSportUpdates(ctx, req)
+	resp, err := cg.client.StartSportUpdates(context.Background(), req)
 	if err != nil {
 		return err
 	}

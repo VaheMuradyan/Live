@@ -60,116 +60,190 @@
 
         .sports-container {
             display: flex;
-            justify-content: space-between;
-            gap: 20px;
+            flex-direction: column;
+            gap: 30px;
         }
 
         .sport-section {
-            flex: 1;
             background: white;
-            border-radius: 10px;
+            border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .sport-header {
             text-align: center;
-            font-size: 24px;
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            color: white;
-        }
-
-        .football { background-color: #2E7D32; }
-        .basketball { background-color: #FF6F00; }
-        .tennis { background-color: #1976D2; }
-
-        .coefficient-update {
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            font-size: 28px;
+            margin-bottom: 20px;
             padding: 15px;
-            margin: 10px 0;
-            background: #fafafa;
-            transition: all 0.3s ease;
-        }
-
-        .coefficient-update.new {
-            border-color: #4CAF50;
-            background: #e8f5e8;
-            animation: highlight 2s ease-out;
-        }
-
-        @keyframes highlight {
-            0% { background: #4CAF50; color: white; }
-            100% { background: #e8f5e8; color: inherit; }
-        }
-
-        .update-header {
+            border-radius: 10px;
+            color: white;
             font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 8px;
+        }
+
+        .football { background: linear-gradient(135deg, #2E7D32, #4CAF50); }
+        .basketball { background: linear-gradient(135deg, #FF6F00, #FF9800); }
+        .tennis { background: linear-gradient(135deg, #1976D2, #2196F3); }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .game-window {
+            background: #fafafa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            min-height: 200px;
+        }
+
+        .game-window.updated {
+            border-color: #4CAF50;
+            background: #f1f8e9;
+            animation: pulse 2s ease-out;
+        }
+
+        @keyframes pulse {
+            0% {
+                background: #4CAF50;
+                color: white;
+                transform: scale(1.02);
+            }
+            100% {
+                background: #f1f8e9;
+                color: inherit;
+                transform: scale(1);
+            }
+        }
+
+        .game-header {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
             color: #333;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+
+        .game-details {
+            margin-bottom: 15px;
         }
 
         .event-name {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .market-price {
-            font-size: 13px;
-            color: #888;
+            font-size: 16px;
+            color: #555;
             margin-bottom: 8px;
+            font-weight: 600;
         }
 
-        .coefficient-change {
+        .market-info {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 15px;
+            background: #e8e8e8;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .coefficient-display {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .coeff-section {
+            text-align: center;
+            flex: 1;
+        }
+
+        .coeff-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: bold;
         }
 
         .old-coeff {
-            text-decoration: line-through;
+            font-size: 16px;
             color: #999;
-            font-size: 18px;
+            text-decoration: line-through;
         }
 
-        .new-coeff {
+        .current-coeff {
+            font-size: 24px;
             font-weight: bold;
-            font-size: 20px;
             color: #2E7D32;
         }
 
+        .change-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 20px;
+        }
+
         .change-arrow {
-            font-size: 20px;
-            margin: 0 10px;
+            font-size: 24px;
+            margin-bottom: 5px;
         }
 
         .change-up { color: #4CAF50; }
         .change-down { color: #f44336; }
         .change-same { color: #666; }
 
-        .timestamp {
-            font-size: 11px;
-            color: #aaa;
-            text-align: right;
-            margin-top: 5px;
-        }
-
-        .stats {
-            text-align: center;
-            margin-top: 10px;
+        .change-value {
             font-size: 12px;
-            color: #666;
+            font-weight: bold;
         }
 
-        .no-updates {
+        .game-footer {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #aaa;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 10px;
+        }
+
+        .last-update {
+            font-style: italic;
+        }
+
+        .update-count {
+            background: #e0e0e0;
+            padding: 4px 8px;
+            border-radius: 12px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .no-games {
             text-align: center;
             color: #999;
-            padding: 20px;
+            padding: 40px;
             font-style: italic;
+            font-size: 18px;
+        }
+
+        .stats-summary {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #666;
+            background: rgba(255,255,255,0.8);
+            padding: 10px;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -191,25 +265,25 @@
 <div class="sports-container">
     <div class="sport-section">
         <div class="sport-header football">🏈 Football</div>
-        <div class="stats" id="football-stats">Updates: 0</div>
-        <div id="football-updates" class="updates-container">
-            <div class="no-updates">Waiting for updates...</div>
+        <div class="stats-summary" id="football-stats">Active Games: 0 | Total Updates: 0</div>
+        <div id="football-games" class="games-grid">
+            <div class="no-games">Waiting for game updates...</div>
         </div>
     </div>
 
     <div class="sport-section">
         <div class="sport-header basketball">🏀 Basketball</div>
-        <div class="stats" id="basketball-stats">Updates: 0</div>
-        <div id="basketball-updates" class="updates-container">
-            <div class="no-updates">Waiting for updates...</div>
+        <div class="stats-summary" id="basketball-stats">Active Games: 0 | Total Updates: 0</div>
+        <div id="basketball-games" class="games-grid">
+            <div class="no-games">Waiting for game updates...</div>
         </div>
     </div>
 
     <div class="sport-section">
         <div class="sport-header tennis">🎾 Tennis</div>
-        <div class="stats" id="tennis-stats">Updates: 0</div>
-        <div id="tennis-updates" class="updates-container">
-            <div class="no-updates">Waiting for updates...</div>
+        <div class="stats-summary" id="tennis-stats">Active Games: 0 | Total Updates: 0</div>
+        <div id="tennis-games" class="games-grid">
+            <div class="no-games">Waiting for game updates...</div>
         </div>
     </div>
 </div>
@@ -218,6 +292,11 @@
 <script>
     let centrifuge = null;
     let subscriptions = {};
+    let gameData = {
+        football: {},
+        basketball: {},
+        tennis: {}
+    };
     let updateCounts = {
         football: 0,
         basketball: 0,
@@ -232,6 +311,112 @@
         const statusEl = document.getElementById('status');
         statusEl.textContent = `Status: ${message}`;
         statusEl.className = `status ${status}`;
+    }
+
+    function createGameId(data) {
+        // Create unique ID for each game based on event, market, and price
+        return `${data.country}_${data.competition}_${data.event}_${data.market}_${data.price}`.replace(/[^a-zA-Z0-9]/g, '_');
+    }
+
+    function updateGameWindow(sport, data) {
+        const gameId = createGameId(data);
+        const container = document.getElementById(`${sport}-games`);
+
+        // Remove "no games" message if it exists
+        const noGames = container.querySelector('.no-games');
+        if (noGames) {
+            noGames.remove();
+        }
+
+        // Update or create game data
+        if (!gameData[sport][gameId]) {
+            gameData[sport][gameId] = {
+                ...data,
+                updateCount: 0,
+                firstSeen: new Date()
+            };
+        }
+
+        gameData[sport][gameId] = {
+            ...gameData[sport][gameId],
+            ...data,
+            updateCount: gameData[sport][gameId].updateCount + 1,
+            lastUpdate: new Date()
+        };
+
+        // Update counters
+        updateCounts[sport]++;
+
+        // Find existing window or create new one
+        let gameWindow = document.getElementById(`game_${gameId}`);
+
+        if (!gameWindow) {
+            gameWindow = document.createElement('div');
+            gameWindow.id = `game_${gameId}`;
+            gameWindow.className = 'game-window';
+            container.appendChild(gameWindow);
+        }
+
+        // Add updated class for animation
+        gameWindow.classList.add('updated');
+        setTimeout(() => {
+            gameWindow.classList.remove('updated');
+        }, 2000);
+
+        // Calculate change
+        const change = data.new_coefficient - data.old_coefficient;
+        let changeClass = 'change-same';
+        let changeIcon = '➡️';
+        let changeText = '0.00';
+
+        if (change > 0) {
+            changeClass = 'change-up';
+            changeIcon = '⬆️';
+            changeText = `+${change.toFixed(2)}`;
+        } else if (change < 0) {
+            changeClass = 'change-down';
+            changeIcon = '⬇️';
+            changeText = change.toFixed(2);
+        }
+
+        // Update window content
+        gameWindow.innerHTML = `
+            <div class="game-header">${data.country} • ${data.competition}</div>
+            <div class="game-details">
+                <div class="event-name">${data.event}</div>
+                <div class="market-info">${data.market} • ${data.price}</div>
+            </div>
+            <div class="coefficient-display">
+                <div class="coeff-section">
+                    <div class="coeff-label">Previous</div>
+                    <div class="old-coeff">${data.old_coefficient.toFixed(2)}</div>
+                </div>
+                <div class="change-indicator">
+                    <div class="change-arrow ${changeClass}">${changeIcon}</div>
+                    <div class="change-value ${changeClass}">${changeText}</div>
+                </div>
+                <div class="coeff-section">
+                    <div class="coeff-label">Current</div>
+                    <div class="current-coeff">${data.new_coefficient.toFixed(2)}</div>
+                </div>
+            </div>
+            <div class="game-footer">
+                <div class="last-update">Last: ${new Date(data.timestamp).toLocaleTimeString()}</div>
+                <div class="update-count">${gameData[sport][gameId].updateCount} updates</div>
+            </div>
+        `;
+
+        // Update stats
+        updateStats();
+    }
+
+    function updateStats() {
+        Object.keys(gameData).forEach(sport => {
+            const activeGames = Object.keys(gameData[sport]).length;
+            const totalUpdates = updateCounts[sport];
+            document.getElementById(`${sport}-stats`).textContent =
+                `Active Games: ${activeGames} | Total Updates: ${totalUpdates}`;
+        });
     }
 
     function connect() {
@@ -272,7 +457,7 @@
 
                 subscriptions[sport].on('publication', function(ctx) {
                     log(`🎯 Received ${sport} update: ` + JSON.stringify(ctx.data));
-                    showCoefficientUpdate(sport, ctx.data);
+                    updateGameWindow(sport, ctx.data);
                 });
 
                 subscriptions[sport].on('error', function(ctx) {
@@ -323,80 +508,6 @@
             subscriptions = {};
             updateStatus('disconnected', 'Disconnected');
         }
-    }
-
-    function showCoefficientUpdate(sport, data) {
-        log(`📊 Displaying update for ${sport}`);
-
-        // Update counter
-        updateCounts[sport]++;
-        document.getElementById(`${sport}-stats`).textContent = `Updates: ${updateCounts[sport]}`;
-
-        // Remove "no updates" message if it exists
-        const container = document.getElementById(`${sport}-updates`);
-        const noUpdates = container.querySelector('.no-updates');
-        if (noUpdates) {
-            noUpdates.remove();
-        }
-
-        // Create update element
-        const updateDiv = document.createElement('div');
-        updateDiv.className = 'coefficient-update new';
-
-        // Calculate change direction
-        const change = data.new_coefficient - data.old_coefficient;
-        let changeClass = 'change-same';
-        let changeIcon = '➡️';
-
-        if (change > 0) {
-            changeClass = 'change-up';
-            changeIcon = '⬆️';
-        } else if (change < 0) {
-            changeClass = 'change-down';
-            changeIcon = '⬇️';
-        }
-
-        updateDiv.innerHTML = `
-                <div class="update-header">${data.country} • ${data.competition}</div>
-                <div class="event-name">${data.event}</div>
-                <div class="market-price">${data.market} • ${data.price}</div>
-                <div class="coefficient-change">
-                    <span class="old-coeff">${data.old_coefficient.toFixed(2)}</span>
-                    <span class="change-arrow ${changeClass}">${changeIcon}</span>
-                    <span class="new-coeff">${data.new_coefficient.toFixed(2)}</span>
-                </div>
-                <div class="timestamp">${new Date(data.timestamp).toLocaleTimeString()}</div>
-            `;
-
-        // Add to top of container
-        container.insertBefore(updateDiv, container.firstChild);
-
-        // Remove old updates (keep only last 10)
-        const updates = container.querySelectorAll('.coefficient-update');
-        if (updates.length > 10) {
-            updates[updates.length - 1].remove();
-        }
-
-        // Remove highlight class after animation
-        setTimeout(() => {
-            updateDiv.classList.remove('new');
-        }, 2000);
-    }
-
-    // Manual test function - you can call this from browser console
-    function testUpdate() {
-        const testData = {
-            sport: "Football",
-            country: "England",
-            competition: "Premier League",
-            event: "Test vs Test",
-            market: "1X2",
-            price: "Home",
-            old_coefficient: 2.50,
-            new_coefficient: 2.75,
-            timestamp: new Date().toISOString()
-        };
-        showCoefficientUpdate('football', testData);
     }
 
     // Auto-connect

@@ -46,7 +46,7 @@ type Market struct {
 	gorm.Model
 	Name               string           `json:"name"`
 	Code               string           `json:"code"`
-	Type               string           `json:"type"` // match_winner, over_under, handicap, etc.
+	Type               string           `json:"type"`
 	MarketCollectionID uint             `json:"market_collection_id"`
 	MarketCollection   MarketCollection `gorm:"foreignKey:MarketCollectionID" json:"market_collection,omitempty"`
 	Prices             []Price          `gorm:"foreignKey:MarketID" json:"prices,omitempty"`
@@ -73,15 +73,6 @@ type Coefficient struct {
 	Price   Price   `gorm:"foreignKey:PriceID" json:"price,omitempty"`
 	Value   float64 `gorm:"type:decimal(9,4)" json:"value"`
 }
-
-type CoefficientHistory struct {
-	gorm.Model
-	MarketID uint    `json:"market_id"`
-	Market   Market  `gorm:"foreignKey:MarketID" json:"market,omitempty"`
-	OldValue float64 `gorm:"type:decimal(9,4)" json:"old_value"`
-	NewValue float64 `gorm:"type:decimal(9,4)" json:"new_value"`
-}
-
 type Team struct {
 	gorm.Model
 	Name         string        `json:"name"`

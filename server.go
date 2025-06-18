@@ -72,23 +72,6 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 	}, nil
 }
 
-func (s *Server) runSportUpdates(sport string, interval time.Duration, stopChan chan bool) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-stopChan:
-			fmt.Println("Goroutine stopped")
-			return
-		case <-ticker.C:
-			if err := s.generateCoefficientUpdate(sport); err != nil {
-				log.Printf("Error updating coefficient for %s: %v", sport, err)
-			}
-		}
-	}
-}
-
 func (s *Server) generateCoefficientUpdate(sport string) error {
 	prices, err := s.getPricesBySport(sport)
 	if err != nil {
@@ -108,8 +91,8 @@ func (s *Server) updateCoefficient(price *models.Price) error {
 	if newCoeff < 1.01 {
 		newCoeff = 1.01
 	}
-	if newCoeff > 50.0 {
-		newCoeff = 50.0
+	if newCoeff > 5.0 {
+		newCoeff = 5.0
 	}
 
 	price.PreviousCoefficient = oldCoeff
@@ -119,13 +102,6 @@ func (s *Server) updateCoefficient(price *models.Price) error {
 	if err := db.DB.Save(price).Error; err != nil {
 		return fmt.Errorf("failed to update price in database: %v", err)
 	}
-
-	history := models.CoefficientHistory{
-		MarketID: price.MarketID,
-		OldValue: oldCoeff,
-		NewValue: newCoeff,
-	}
-	db.DB.Create(&history)
 
 	sport := price.Market.MarketCollection.Event.Competition.Country.Sport.Name
 

@@ -31,8 +31,7 @@ func Connect() {
 	}
 
 	err = DB.AutoMigrate(&models.Sport{}, &models.Country{}, &models.Competition{}, &models.Team{}, &models.Event{},
-		&models.MarketCollection{}, &models.Market{}, &models.Price{}, &models.Coefficient{},
-		&models.CoefficientHistory{})
+		&models.MarketCollection{}, &models.Market{}, &models.Price{}, &models.Coefficient{})
 	if err != nil {
 		log.Fatal("Failed to migrate database!")
 	}
