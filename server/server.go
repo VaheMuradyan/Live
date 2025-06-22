@@ -1,8 +1,9 @@
-package main
+package server
 
 import (
 	"context"
 	"fmt"
+	"github.com/VaheMuradyan/Live/db/models"
 	"log"
 	"math/rand"
 	"strings"
@@ -10,7 +11,6 @@ import (
 	"time"
 
 	"github.com/VaheMuradyan/Live/db"
-	"github.com/VaheMuradyan/Live/models"
 	"github.com/VaheMuradyan/Live/proto"
 	"github.com/go-resty/resty/v2"
 )
@@ -22,24 +22,18 @@ const (
 
 type Server struct {
 	live.UnimplementedCoefficientServiceServer
-	sportRoutines map[string]chan bool
-	mu            sync.RWMutex
+	sportRoutines sync.Map
 }
 
 func NewServer() *Server {
-	return &Server{
-		sportRoutines: make(map[string]chan bool),
-	}
+	return &Server{}
 }
 
 func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) (*live.SportResponse, error) {
 	sport := req.Sport
 	interval := req.UpdateIntervalSeconds
 
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if _, exists := s.sportRoutines[sport]; exists {
+	if _, exists := s.sportRoutines.Load(sport); exists {
 		return &live.SportResponse{
 			Success: false,
 			Message: fmt.Sprintf("Sport %s updates already running", sport),
@@ -48,7 +42,7 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 	}
 
 	stopChan := make(chan bool)
-	s.sportRoutines[sport] = stopChan
+	s.sportRoutines.Store(sport, stopChan)
 
 	go func(ticker *time.Ticker) {
 		defer ticker.Stop()
@@ -91,8 +85,8 @@ func (s *Server) updateCoefficient(price *models.Price) error {
 	if newCoeff < 1.01 {
 		newCoeff = 1.01
 	}
-	if newCoeff > 5.0 {
-		newCoeff = 5.0
+	if newCoeff > 50.0 {
+		newCoeff = 50.0
 	}
 
 	price.PreviousCoefficient = oldCoeff
@@ -146,7 +140,7 @@ func (s *Server) getPricesBySport(sportName string) ([]models.Price, error) {
 		Joins("JOIN competitions ON events.competition_id = competitions.id").
 		Joins("JOIN countries ON competitions.country_id = countries.id").
 		Joins("JOIN sports ON countries.sport_id = sports.id").
-		Where("sports.name = ? AND prices.active = ? AND prices.status = ?", sportName, true, "active").
+		Where("sports.name = ? AND prices.active = ? AND prices.status = ? AND market_collections.code = ?", sportName, true, "active", "MAIN").
 		Find(&prices).Error
 	return prices, err
 }

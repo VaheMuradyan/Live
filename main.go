@@ -1,8 +1,10 @@
 package main
 
 import (
+	"github.com/VaheMuradyan/Live/client"
 	"github.com/VaheMuradyan/Live/db"
 	live "github.com/VaheMuradyan/Live/proto"
+	mainServer "github.com/VaheMuradyan/Live/server"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -16,13 +18,11 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	server := NewServer()
+	server := mainServer.NewServer()
 	s := grpc.NewServer()
 	live.RegisterCoefficientServiceServer(s, server)
 
-	go func() {
-		StartClient()
-	}()
+	go client.StartClient()
 
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

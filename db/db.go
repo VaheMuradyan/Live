@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/VaheMuradyan/Live/models"
+	"github.com/VaheMuradyan/Live/db/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

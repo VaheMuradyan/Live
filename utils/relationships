@@ -1,0 +1,130 @@
+-- Insert Sports
+INSERT INTO sports (name, code, created_at, updated_at) VALUES
+('Football', 'FOOTBALL', NOW(), NOW()),
+('Basketball', 'BASKETBALL', NOW(), NOW()),
+('Tennis', 'TENNIS', NOW(), NOW());
+
+-- Insert Countries (1 for each sport)
+INSERT INTO countries (name, code, sport_id, created_at, updated_at) VALUES
+('England', 'ENG', 1, NOW(), NOW()),
+('United States', 'USA', 2, NOW(), NOW()),
+('France', 'FRA', 3, NOW(), NOW());
+
+-- Insert Competitions (1 for each country)
+INSERT INTO competitions (name, country_id, created_at, updated_at) VALUES
+('Premier League', 1, NOW(), NOW()),
+('NBA', 2, NOW(), NOW()),
+('French Open', 3, NOW(), NOW());
+
+-- Insert Teams (2 for each competition)
+INSERT INTO teams (name, rating, country_id, created_at, updated_at) VALUES
+('Manchester United', 85, 1, NOW(), NOW()),
+('Liverpool', 88, 1, NOW(), NOW()),
+('Los Angeles Lakers', 87, 2, NOW(), NOW()),
+('Boston Celtics', 89, 2, NOW(), NOW()),
+('Rafael Nadal', 95, 3, NOW(), NOW()),
+('Gael Monfils', 82, 3, NOW(), NOW());
+
+-- Insert Competition Teams relationships
+INSERT INTO competition_teams (competition_id, team_id) VALUES
+(1, 1), (1, 2), -- Premier League
+(2, 3), (2, 4), -- NBA
+(3, 5), (3, 6); -- French Open
+
+-- Insert Sport Teams relationships
+INSERT INTO sport_teams (sport_id, team_id) VALUES
+(1, 1), (1, 2), -- Football
+(2, 3), (2, 4), -- Basketball
+(3, 5), (3, 6); -- Tennis
+
+-- Insert Events (1 for each competition)
+INSERT INTO events (name, competition_id, start_time, created_at, updated_at) VALUES
+('Manchester United vs Liverpool', 1, '2025-06-20 15:00:00', NOW(), NOW()),
+('Lakers vs Celtics', 2, '2025-06-20 02:00:00', NOW(), NOW()),
+('Nadal vs Monfils', 3, '2025-06-20 14:00:00', NOW(), NOW());
+
+-- Insert Event Teams relationships
+INSERT INTO event_teams (event_id, team_id) VALUES
+(1, 1), (1, 2), -- Football event
+(2, 3), (2, 4), -- Basketball event
+(3, 5), (3, 6); -- Tennis event
+
+-- Insert Market Collections (3 per event with meaningful grouping)
+INSERT INTO market_collections (name, code, event_id, created_at, updated_at) VALUES
+-- Event 1 (Football) collections
+('Main Markets', 'MAIN', 1, NOW(), NOW()),
+('Goal Markets', 'GOALS', 1, NOW(), NOW()),
+('Special Markets', 'SPECIAL', 1, NOW(), NOW()),
+-- Event 2 (Basketball) collections
+('Main Markets', 'MAIN', 2, NOW(), NOW()),
+('Score Markets', 'SCORE', 2, NOW(), NOW()),
+('Special Markets', 'SPECIAL', 2, NOW(), NOW()),
+-- Event 3 (Tennis) collections
+('Main Markets', 'MAIN', 3, NOW(), NOW()),
+('Set Markets', 'SETS', 3, NOW(), NOW()),
+('Special Markets', 'SPECIAL', 3, NOW(), NOW());
+
+-- Insert Markets (1 market per collection - each event has its own 1X2 market)
+INSERT INTO markets (name, code, type, market_collection_id, last_updated, created_at, updated_at) VALUES
+-- Main Markets for each event
+('1X2', '1X2', 'three_way', 1, NOW(), NOW(), NOW()), -- Football Main
+('1X2', '1X2', 'three_way', 4, NOW(), NOW(), NOW()), -- Basketball Main
+('1X2', '1X2', 'three_way', 7, NOW(), NOW(), NOW()), -- Tennis Main
+-- Goal/Score Markets (different types for variety)
+('Over/Under 2.5', 'OU25', 'over_under', 2, NOW(), NOW(), NOW()), -- Football Goals
+('Total Points', 'TOTAL', 'over_under', 5, NOW(), NOW(), NOW()), -- Basketball Score
+('Total Sets', 'SETS', 'over_under', 8, NOW(), NOW(), NOW()), -- Tennis Sets
+-- Special Markets
+('First Goal', 'FG', 'special', 3, NOW(), NOW(), NOW()), -- Football Special
+('First Basket', 'FB', 'special', 6, NOW(), NOW(), NOW()), -- Basketball Special
+('First Set Winner', 'FSW', 'special', 9, NOW(), NOW(), NOW()); -- Tennis Special
+
+-- Insert Prices (3 for each 1X2 market, 2 for over/under, 2 for special)
+INSERT INTO prices (name, code, market_id, current_coefficient, previous_coefficient, status, active, last_updated, created_at, updated_at) VALUES
+-- Football 1X2 Market (Market ID 1)
+('Manchester United', '1', 1, 2.10, 2.05, 'active', 1, NOW(), NOW(), NOW()),
+('Draw', 'X', 1, 3.20, 3.15, 'active', 1, NOW(), NOW(), NOW()),
+('Liverpool', '2', 1, 3.50, 3.45, 'active', 1, NOW(), NOW(), NOW()),
+
+-- Basketball 1X2 Market (Market ID 2)
+('Lakers', '1', 2, 1.85, 1.80, 'active', 1, NOW(), NOW(), NOW()),
+('Draw', 'X', 2, 15.00, 14.50, 'active', 1, NOW(), NOW(), NOW()), -- Rare in basketball
+('Celtics', '2', 2, 2.05, 2.00, 'active', 1, NOW(), NOW(), NOW()),
+
+-- Tennis 1X2 Market (Market ID 3) - No draw in tennis
+('Nadal', '1', 3, 1.70, 1.65, 'active', 1, NOW(), NOW(), NOW()),
+('Monfils', '2', 3, 2.20, 2.15, 'active', 1, NOW(), NOW(), NOW()),
+
+-- Football Over/Under Market (Market ID 4)
+('Over 2.5', 'OVER', 4, 1.90, 1.85, 'active', 1, NOW(), NOW(), NOW()),
+('Under 2.5', 'UNDER', 4, 1.95, 1.90, 'active', 1, NOW(), NOW(), NOW()),
+
+-- Basketball Total Points Market (Market ID 5)
+('Over 220.5', 'OVER', 5, 1.85, 1.80, 'active', 1, NOW(), NOW(), NOW()),
+('Under 220.5', 'UNDER', 5, 2.00, 1.95, 'active', 1, NOW(), NOW(), NOW()),
+
+-- Tennis Total Sets Market (Market ID 6)
+('Over 3.5', 'OVER', 6, 2.10, 2.05, 'active', 1, NOW(), NOW(), NOW()),
+('Under 3.5', 'UNDER', 6, 1.75, 1.70, 'active', 1, NOW(), NOW(), NOW()),
+
+-- Football First Goal Market (Market ID 7)
+('Manchester United', 'MU', 7, 2.50, 2.45, 'active', 1, NOW(), NOW(), NOW()),
+('Liverpool', 'LIV', 7, 2.80, 2.75, 'active', 1, NOW(), NOW(), NOW()),
+
+-- Basketball First Basket Market (Market ID 8)
+('Lakers', 'LAL', 8, 1.90, 1.85, 'active', 1, NOW(), NOW(), NOW()),
+('Celtics', 'BOS', 8, 1.95, 1.90, 'active', 1, NOW(), NOW(), NOW()),
+
+-- Tennis First Set Winner Market (Market ID 9)
+('Nadal', 'NAD', 9, 1.65, 1.60, 'active', 1, NOW(), NOW(), NOW()),
+('Monfils', 'MON', 9, 2.30, 2.25, 'active', 1, NOW(), NOW(), NOW());
+
+-- Insert Coefficients (remove redundancy - only store if different from current_coefficient)
+-- In this case, we'll use coefficients for historical tracking only
+INSERT INTO coefficients (price_id, value, created_at, updated_at) VALUES
+-- Only insert if you need historical coefficient tracking
+-- For now, current_coefficient in prices table is sufficient
+(1, 2.00, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)), -- Historical value
+(1, 2.05, DATE_SUB(NOW(), INTERVAL 1 HOUR), DATE_SUB(NOW(), INTERVAL 1 HOUR)), -- Previous value
+(2, 3.00, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(3, 3.20, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY));
