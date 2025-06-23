@@ -44,6 +44,8 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 	stopChan := make(chan bool)
 	s.sportRoutines.Store(sport, stopChan)
 
+	s.expandTotalGoalsMarkets(sport)
+
 	go func(ticker *time.Ticker) {
 		defer ticker.Stop()
 		for {
@@ -67,9 +69,53 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 }
 
 func (s *Server) generateCoefficientUpdate(sport string) error {
-	prices, err := s.getPricesBySport(sport)
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		if err := s.updateMainMarkets(sport); err != nil {
+			log.Printf("Error updating MAIN markets for %s: %v", sport, err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if err := s.updateGoalsMarkets(sport); err != nil {
+			log.Println("END")
+		}
+	}()
+
+	wg.Wait()
+	return nil
+}
+
+func (s *Server) updateMainMarkets(sport string) error {
+	prices, err := s.getPricesBySport(sport, "MAIN")
 	if err != nil {
-		return fmt.Errorf("error getting prices for %s: %v", sport, err)
+		return fmt.Errorf("error getting MAIN prices for %s: %v", sport, err)
+	}
+
+	if len(prices) == 0 {
+		return fmt.Errorf("no active MAIN prices found for sport %s", sport)
+	}
+
+	randomPrice := prices[rand.Intn(len(prices))]
+	return s.updateCoefficient(&randomPrice)
+}
+
+func (s *Server) updateGoalsMarkets(sport string) error {
+	if _, exists := s.sportRoutines.Load(sport + "_goals_stop"); exists {
+		return nil
+	}
+
+	prices, err := s.getPricesBySport(sport, "GOALS")
+	if err != nil {
+		return fmt.Errorf("error getting GOALS prices for %s: %v", sport, err)
+	}
+
+	if len(prices) == 0 {
+		return fmt.Errorf("no active GOALS prices found for sport %s", sport)
 	}
 
 	randomPrice := prices[rand.Intn(len(prices))]
@@ -97,26 +143,33 @@ func (s *Server) updateCoefficient(price *models.Price) error {
 		return fmt.Errorf("failed to update price in database: %v", err)
 	}
 
-	sport := price.Market.MarketCollection.Event.Competition.Country.Sport.Name
+	return s.sendToCentrifugo(price)
+}
 
+func (s *Server) sendToCentrifugo(price *models.Price) error {
+	sport := price.Market.MarketCollection.Event.Competition.Country.Sport.Name
+	marketCollectionCode := price.Market.MarketCollection.Code
 	data := map[string]interface{}{
-		"sport":           sport,
-		"country":         price.Market.MarketCollection.Event.Competition.Country.Name,
-		"competition":     price.Market.MarketCollection.Event.Competition.Name,
-		"event":           price.Market.MarketCollection.Event.Name,
-		"market":          price.Market.Name,
-		"price":           price.Name,
-		"old_coefficient": float32(oldCoeff),
-		"new_coefficient": float32(newCoeff),
-		"timestamp":       time.Now().Format(time.RFC3339),
-		"change":          float32(newCoeff) - float32(oldCoeff),
-		"channel":         sport,
+		"sport":                  sport,
+		"country":                price.Market.MarketCollection.Event.Competition.Country.Name,
+		"competition":            price.Market.MarketCollection.Event.Competition.Name,
+		"event":                  price.Market.MarketCollection.Event.Name,
+		"market":                 price.Market.Name,
+		"market_type":            price.Market.Type,
+		"market_collection_code": price.Market.MarketCollection.Code,
+		"price":                  price.Name,
+		"old_coefficient":        float32(price.PreviousCoefficient),
+		"new_coefficient":        float32(price.CurrentCoefficient),
+		"timestamp":              time.Now().Format(time.RFC3339),
+		"change":                 float32(price.CurrentCoefficient) - float32(price.PreviousCoefficient),
 	}
+
+	channelName := strings.ToLower(sport) + "_" + strings.ToLower(marketCollectionCode)
 
 	payload := map[string]interface{}{
 		"method": "publish",
 		"params": map[string]interface{}{
-			"channel": strings.ToLower(sport),
+			"channel": channelName,
 			"data":    data,
 		},
 	}
@@ -131,7 +184,65 @@ func (s *Server) updateCoefficient(price *models.Price) error {
 	return err
 }
 
-func (s *Server) getPricesBySport(sportName string) ([]models.Price, error) {
+func (s *Server) expandTotalGoalsMarkets(sportName string) {
+	var collection models.MarketCollection
+	err := db.DB.Preload("Event.Competition.Country.Sport").
+		Joins("JOIN events ON market_collections.event_id = events.id").
+		Joins("JOIN competitions ON events.competition_id = competitions.id").
+		Joins("JOIN countries ON competitions.country_id = countries.id").
+		Joins("JOIN sports ON countries.sport_id = sports.id").
+		Where("sports.name = ? AND market_collections.code = ?", sportName, "GOALS").
+		First(&collection).Error
+
+	if err != nil {
+		log.Printf("Error getting goals collections for sport %s: %v", sportName, err)
+		return
+	}
+
+	s.activateGoalsMarketWithArgument(collection, "25")
+	s.activateGoalsMarketWithArgument(collection, "35")
+	s.activateGoalsMarketWithArgument(collection, "45")
+
+	go func(collectionID uint) {
+		time.Sleep(20 * time.Second)
+		s.removeGoalsArgument(collectionID, "25")
+	}(collection.ID)
+
+	go func(collectionID uint) {
+		time.Sleep(30 * time.Second)
+		s.removeGoalsArgument(collectionID, "35")
+	}(collection.ID)
+
+	go func(collectionID uint) {
+		time.Sleep(40 * time.Second)
+		s.sportRoutines.Store(sportName+"_goals_stop", true)
+	}(collection.ID)
+}
+
+func (s *Server) activateGoalsMarketWithArgument(collection models.MarketCollection, argument string) {
+	var existingMarket models.Market
+	result := db.DB.Where("market_collection_id = ? AND code = ?",
+		collection.ID, "OU"+argument).First(&existingMarket)
+
+	if result.Error == nil {
+		db.DB.Model(&models.Price{}).Where("market_id = ?", existingMarket.ID).
+			Update("active", true)
+		return
+	}
+}
+
+func (s *Server) removeGoalsArgument(collectionID uint, argument string) {
+	var market models.Market
+	if err := db.DB.Where("market_collection_id = ? AND code = ?",
+		collectionID, "OU"+argument).First(&market).Error; err != nil {
+		return
+	}
+
+	db.DB.Model(&models.Price{}).Where("market_id = ?", market.ID).
+		Update("active", false)
+}
+
+func (s *Server) getPricesBySport(sportName string, code string) ([]models.Price, error) {
 	var prices []models.Price
 	err := db.DB.Preload("Market.MarketCollection.Event.Competition.Country.Sport").
 		Joins("JOIN markets ON prices.market_id = markets.id").
@@ -140,7 +251,8 @@ func (s *Server) getPricesBySport(sportName string) ([]models.Price, error) {
 		Joins("JOIN competitions ON events.competition_id = competitions.id").
 		Joins("JOIN countries ON competitions.country_id = countries.id").
 		Joins("JOIN sports ON countries.sport_id = sports.id").
-		Where("sports.name = ? AND prices.active = ? AND prices.status = ? AND market_collections.code = ?", sportName, true, "active", "MAIN").
+		Where("sports.name = ? AND prices.active = ? AND prices.status = ? AND market_collections.code = ?",
+			sportName, true, "active", code).
 		Find(&prices).Error
 	return prices, err
 }

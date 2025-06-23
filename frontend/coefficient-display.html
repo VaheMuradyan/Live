@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Live Coefficient Updates</title>
+    <title>Live Coefficient Updates - Main & Goals</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -85,6 +85,48 @@
         .basketball { background: linear-gradient(135deg, #FF6F00, #FF9800); }
         .tennis { background: linear-gradient(135deg, #1976D2, #2196F3); }
 
+        .market-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .market-tab {
+            flex: 1;
+            padding: 12px 20px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 0 2px;
+        }
+
+        .market-tab.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .market-tab:not(.active) {
+            background: white;
+            color: #666;
+        }
+
+        .market-tab:hover:not(.active) {
+            background: #e8e8e8;
+        }
+
+        .market-content {
+            display: none;
+        }
+
+        .market-content.active {
+            display: block;
+        }
+
         .games-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -105,6 +147,14 @@
             border-color: #4CAF50;
             background: #f1f8e9;
             animation: pulse 2s ease-out;
+        }
+
+        .game-window.main-market {
+            border-left: 4px solid #2196F3;
+        }
+
+        .game-window.goals-market {
+            border-left: 4px solid #FF9800;
         }
 
         @keyframes pulse {
@@ -250,7 +300,7 @@
 <body>
 <div class="header">
     <h1>🎯 Live Coefficient Updates</h1>
-    <p>Real-time sports betting coefficient changes</p>
+    <p>Real-time sports betting coefficient changes - Main & Goals Markets</p>
 </div>
 
 <div class="controls">
@@ -264,26 +314,68 @@
 
 <div class="sports-container">
     <div class="sport-section">
-        <div class="sport-header football">🏈 Football</div>
-        <div class="stats-summary" id="football-stats">Active Games: 0 | Total Updates: 0</div>
-        <div id="football-games" class="games-grid">
-            <div class="no-games">Waiting for game updates...</div>
+        <div class="sport-header football">⚽️ Football</div>
+        <div class="stats-summary" id="football-stats">Main: 0 games, 0 updates | Goals: 0 games, 0 updates</div>
+
+        <div class="market-tabs">
+            <div class="market-tab active" onclick="switchMarket('football', 'main')">📊 Main Markets (1X2)</div>
+            <div class="market-tab" onclick="switchMarket('football', 'goals')">⚽ Goals Markets</div>
+        </div>
+
+        <div id="football-main" class="market-content active">
+            <div class="games-grid">
+                <div class="no-games">Waiting for main market updates...</div>
+            </div>
+        </div>
+
+        <div id="football-goals" class="market-content">
+            <div class="games-grid">
+                <div class="no-games">Waiting for goals market updates...</div>
+            </div>
         </div>
     </div>
 
     <div class="sport-section">
         <div class="sport-header basketball">🏀 Basketball</div>
-        <div class="stats-summary" id="basketball-stats">Active Games: 0 | Total Updates: 0</div>
-        <div id="basketball-games" class="games-grid">
-            <div class="no-games">Waiting for game updates...</div>
+        <div class="stats-summary" id="basketball-stats">Main: 0 games, 0 updates | Goals: 0 games, 0 updates</div>
+
+        <div class="market-tabs">
+            <div class="market-tab active" onclick="switchMarket('basketball', 'main')">📊 Main Markets (1X2)</div>
+            <div class="market-tab" onclick="switchMarket('basketball', 'goals')">🏀 Goals Markets</div>
+        </div>
+
+        <div id="basketball-main" class="market-content active">
+            <div class="games-grid">
+                <div class="no-games">Waiting for main market updates...</div>
+            </div>
+        </div>
+
+        <div id="basketball-goals" class="market-content">
+            <div class="games-grid">
+                <div class="no-games">Waiting for goals market updates...</div>
+            </div>
         </div>
     </div>
 
     <div class="sport-section">
         <div class="sport-header tennis">🎾 Tennis</div>
-        <div class="stats-summary" id="tennis-stats">Active Games: 0 | Total Updates: 0</div>
-        <div id="tennis-games" class="games-grid">
-            <div class="no-games">Waiting for game updates...</div>
+        <div class="stats-summary" id="tennis-stats">Main: 0 games, 0 updates | Goals: 0 games, 0 updates</div>
+
+        <div class="market-tabs">
+            <div class="market-tab active" onclick="switchMarket('tennis', 'main')">📊 Main Markets (1X2)</div>
+            <div class="market-tab" onclick="switchMarket('tennis', 'goals')">🎾 Goals Markets</div>
+        </div>
+
+        <div id="tennis-main" class="market-content active">
+            <div class="games-grid">
+                <div class="no-games">Waiting for main market updates...</div>
+            </div>
+        </div>
+
+        <div id="tennis-goals" class="market-content">
+            <div class="games-grid">
+                <div class="no-games">Waiting for goals market updates...</div>
+            </div>
         </div>
     </div>
 </div>
@@ -293,14 +385,14 @@
     let centrifuge = null;
     let subscriptions = {};
     let gameData = {
-        football: {},
-        basketball: {},
-        tennis: {}
+        football: { main: {}, goals: {} },
+        basketball: { main: {}, goals: {} },
+        tennis: { main: {}, goals: {} }
     };
     let updateCounts = {
-        football: 0,
-        basketball: 0,
-        tennis: 0
+        football: { main: 0, goals: 0 },
+        basketball: { main: 0, goals: 0 },
+        tennis: { main: 0, goals: 0 }
     };
 
     function log(message) {
@@ -313,14 +405,47 @@
         statusEl.className = `status ${status}`;
     }
 
+    // FIXED: Simple tab switching function
+    function switchMarket(sport, marketType) {
+        log(`Switching to ${sport} ${marketType} market`);
+
+        // Find the sport section
+        const sportSection = document.getElementById(`${sport}-stats`).parentElement;
+
+        // Update tab styling
+        const tabs = sportSection.querySelectorAll('.market-tab');
+        tabs.forEach(tab => tab.classList.remove('active'));
+
+        // Activate clicked tab
+        const activeTab = Array.from(tabs).find(tab =>
+            tab.onclick.toString().includes(`'${marketType}'`)
+        );
+        if (activeTab) {
+            activeTab.classList.add('active');
+        }
+
+        // Show/hide content
+        const mainContent = document.getElementById(`${sport}-main`);
+        const goalsContent = document.getElementById(`${sport}-goals`);
+
+        if (marketType === 'main') {
+            mainContent.classList.add('active');
+            goalsContent.classList.remove('active');
+        } else {
+            goalsContent.classList.add('active');
+            mainContent.classList.remove('active');
+        }
+
+        log(`Switched to ${sport} ${marketType} successfully`);
+    }
+
     function createGameId(data) {
-        // Create unique ID for each game based on event, market, and price
         return `${data.country}_${data.competition}_${data.event}_${data.market}_${data.price}`.replace(/[^a-zA-Z0-9]/g, '_');
     }
 
-    function updateGameWindow(sport, data) {
+    function updateGameWindow(sport, marketType, data) {
         const gameId = createGameId(data);
-        const container = document.getElementById(`${sport}-games`);
+        const container = document.querySelector(`#${sport}-${marketType} .games-grid`);
 
         // Remove "no games" message if it exists
         const noGames = container.querySelector('.no-games');
@@ -329,23 +454,23 @@
         }
 
         // Update or create game data
-        if (!gameData[sport][gameId]) {
-            gameData[sport][gameId] = {
+        if (!gameData[sport][marketType][gameId]) {
+            gameData[sport][marketType][gameId] = {
                 ...data,
                 updateCount: 0,
                 firstSeen: new Date()
             };
         }
 
-        gameData[sport][gameId] = {
-            ...gameData[sport][gameId],
+        gameData[sport][marketType][gameId] = {
+            ...gameData[sport][marketType][gameId],
             ...data,
-            updateCount: gameData[sport][gameId].updateCount + 1,
+            updateCount: gameData[sport][marketType][gameId].updateCount + 1,
             lastUpdate: new Date()
         };
 
         // Update counters
-        updateCounts[sport]++;
+        updateCounts[sport][marketType]++;
 
         // Find existing window or create new one
         let gameWindow = document.getElementById(`game_${gameId}`);
@@ -353,7 +478,7 @@
         if (!gameWindow) {
             gameWindow = document.createElement('div');
             gameWindow.id = `game_${gameId}`;
-            gameWindow.className = 'game-window';
+            gameWindow.className = `game-window ${marketType}-market`;
             container.appendChild(gameWindow);
         }
 
@@ -402,7 +527,7 @@
             </div>
             <div class="game-footer">
                 <div class="last-update">Last: ${new Date(data.timestamp).toLocaleTimeString()}</div>
-                <div class="update-count">${gameData[sport][gameId].updateCount} updates</div>
+                <div class="update-count">${gameData[sport][marketType][gameId].updateCount} updates</div>
             </div>
         `;
 
@@ -412,10 +537,13 @@
 
     function updateStats() {
         Object.keys(gameData).forEach(sport => {
-            const activeGames = Object.keys(gameData[sport]).length;
-            const totalUpdates = updateCounts[sport];
+            const mainGames = Object.keys(gameData[sport].main).length;
+            const goalsGames = Object.keys(gameData[sport].goals).length;
+            const mainUpdates = updateCounts[sport].main;
+            const goalsUpdates = updateCounts[sport].goals;
+
             document.getElementById(`${sport}-stats`).textContent =
-                `Active Games: ${activeGames} | Total Updates: ${totalUpdates}`;
+                `Main: ${mainGames} games, ${mainUpdates} updates | Goals: ${goalsGames} games, ${goalsUpdates} updates`;
         });
     }
 
@@ -423,9 +551,7 @@
         log('🔍 Connecting to Centrifugo...');
         updateStatus('connecting', 'Connecting...');
 
-        centrifuge = new Centrifuge('ws://localhost:8000/connection/websocket', {
-            // No token needed for anonymous connection
-        });
+        centrifuge = new Centrifuge('ws://localhost:8000/connection/websocket');
 
         centrifuge.on('connecting', function(ctx) {
             log('⏳ Connecting...');
@@ -435,50 +561,46 @@
             log('✅ Connected! Client ID: ' + ctx.client);
             updateStatus('connected', 'Connected - Client ID: ' + ctx.client);
 
-            // Subscribe to each sport channel
+            // Subscribe to both main and goals channels for each sport
             const sports = ['football', 'basketball', 'tennis'];
+            const marketTypes = ['main', 'goals'];
 
             sports.forEach(sport => {
-                log(`📤 Attempting to subscribe to ${sport} channel...`);
+                marketTypes.forEach(marketType => {
+                    const channelName = `${sport}_${marketType}`;
+                    log(`📤 Attempting to subscribe to ${channelName} channel...`);
 
-                subscriptions[sport] = centrifuge.newSubscription(sport);
+                    subscriptions[channelName] = centrifuge.newSubscription(channelName);
 
-                subscriptions[sport].on('subscribing', function(ctx) {
-                    log(`⏳ Subscribing to ${sport}...`);
+                    subscriptions[channelName].on('subscribing', function(ctx) {
+                        log(`⏳ Subscribing to ${channelName}...`);
+                    });
+
+                    subscriptions[channelName].on('subscribed', function(ctx) {
+                        log(`✅ Successfully subscribed to ${channelName} channel`);
+                    });
+
+                    subscriptions[channelName].on('unsubscribed', function(ctx) {
+                        log(`❌ Unsubscribed from ${channelName}: ${ctx.reason}`);
+                    });
+
+                    subscriptions[channelName].on('publication', function(ctx) {
+                        log(`🎯 Received ${channelName} update: ` + JSON.stringify(ctx.data));
+                        updateGameWindow(sport, marketType, ctx.data);
+                    });
+
+                    subscriptions[channelName].on('error', function(ctx) {
+                        log(`❌ ${channelName} subscription error: ` + JSON.stringify(ctx.error));
+                    });
+
+                    // Subscribe
+                    try {
+                        subscriptions[channelName].subscribe();
+                        log(`📡 Subscription request sent for ${channelName}`);
+                    } catch (error) {
+                        log(`❌ Error subscribing to ${channelName}: ${error}`);
+                    }
                 });
-
-                subscriptions[sport].on('subscribed', function(ctx) {
-                    log(`✅ Successfully subscribed to ${sport} channel`);
-                });
-
-                subscriptions[sport].on('unsubscribed', function(ctx) {
-                    log(`❌ Unsubscribed from ${sport}: ${ctx.reason}`);
-                });
-
-                subscriptions[sport].on('publication', function(ctx) {
-                    log(`🎯 Received ${sport} update: ` + JSON.stringify(ctx.data));
-                    updateGameWindow(sport, ctx.data);
-                });
-
-                subscriptions[sport].on('error', function(ctx) {
-                    log(`❌ ${sport} subscription error: ` + JSON.stringify(ctx.error));
-                });
-
-                subscriptions[sport].on('join', function(ctx) {
-                    log(`👥 Someone joined ${sport} channel`);
-                });
-
-                subscriptions[sport].on('leave', function(ctx) {
-                    log(`👋 Someone left ${sport} channel`);
-                });
-
-                // Subscribe
-                try {
-                    subscriptions[sport].subscribe();
-                    log(`📡 Subscription request sent for ${sport}`);
-                } catch (error) {
-                    log(`❌ Error subscribing to ${sport}: ${error}`);
-                }
             });
         });
 
