@@ -135,13 +135,21 @@ func (s *Server) updateCoefficient(price *models.Price) error {
 		newCoeff = 50.0
 	}
 
+	result := db.DB.Model(&models.Price{}).
+		Where("id = ? AND active = ?", price.ID, true).
+		Updates(map[string]interface{}{
+			"previous_coefficient": oldCoeff,
+			"current_coefficient":  newCoeff,
+			"last_updated":         time.Now(),
+		})
+
+	if result.RowsAffected == 0 {
+		return nil
+	}
+
 	price.PreviousCoefficient = oldCoeff
 	price.CurrentCoefficient = newCoeff
 	price.LastUpdated = time.Now()
-
-	if err := db.DB.Save(price).Error; err != nil {
-		return fmt.Errorf("failed to update price in database: %v", err)
-	}
 
 	return s.sendToCentrifugo(price)
 }
@@ -185,44 +193,59 @@ func (s *Server) sendToCentrifugo(price *models.Price) error {
 }
 
 func (s *Server) expandTotalGoalsMarkets(sportName string) {
-	var collection models.MarketCollection
+	var collections []models.MarketCollection
 	err := db.DB.Preload("Event.Competition.Country.Sport").
 		Joins("JOIN events ON market_collections.event_id = events.id").
 		Joins("JOIN competitions ON events.competition_id = competitions.id").
 		Joins("JOIN countries ON competitions.country_id = countries.id").
 		Joins("JOIN sports ON countries.sport_id = sports.id").
 		Where("sports.name = ? AND market_collections.code = ?", sportName, "GOALS").
-		First(&collection).Error
+		Find(&collections).Error
 
 	if err != nil {
 		log.Printf("Error getting goals collections for sport %s: %v", sportName, err)
 		return
 	}
 
-	s.activateGoalsMarketWithArgument(collection, "25")
-	s.activateGoalsMarketWithArgument(collection, "35")
-	s.activateGoalsMarketWithArgument(collection, "45")
+	for _, col := range collections {
+		s.activateGoalsMarketWithArgument(col.ID, "25")
+		s.activateGoalsMarketWithArgument(col.ID, "35")
+		s.activateGoalsMarketWithArgument(col.ID, "45")
+	}
 
-	go func(collectionID uint) {
-		time.Sleep(20 * time.Second)
-		s.removeGoalsArgument(collectionID, "25")
-	}(collection.ID)
+	for _, col := range collections {
+		for _, arg := range []string{"25", "35", "45"} {
+			argCopy := arg
+			colID := col.ID
 
-	go func(collectionID uint) {
-		time.Sleep(30 * time.Second)
-		s.removeGoalsArgument(collectionID, "35")
-	}(collection.ID)
+			var delay time.Duration
+			switch argCopy {
+			case "25":
+				delay = 20 * time.Second
+			case "35":
+				delay = 30 * time.Second
+			case "45":
+				delay = 40 * time.Second
+			}
 
-	go func(collectionID uint) {
-		time.Sleep(40 * time.Second)
+			go func(collectionID uint, argument string, d time.Duration) {
+				time.Sleep(d)
+				s.removeGoalsArgument(collectionID, argument)
+			}(colID, argCopy, delay)
+		}
+	}
+
+	go func() {
+		time.Sleep(45 * time.Second)
 		s.sportRoutines.Store(sportName+"_goals_stop", true)
-	}(collection.ID)
+	}()
 }
 
-func (s *Server) activateGoalsMarketWithArgument(collection models.MarketCollection, argument string) {
+func (s *Server) activateGoalsMarketWithArgument(collectionId uint, argument string) {
+	arg := fmt.Sprintf("OU%s", argument)
 	var existingMarket models.Market
 	result := db.DB.Where("market_collection_id = ? AND code = ?",
-		collection.ID, "OU"+argument).First(&existingMarket)
+		collectionId, arg).First(&existingMarket)
 
 	if result.Error == nil {
 		db.DB.Model(&models.Price{}).Where("market_id = ?", existingMarket.ID).
@@ -232,14 +255,16 @@ func (s *Server) activateGoalsMarketWithArgument(collection models.MarketCollect
 }
 
 func (s *Server) removeGoalsArgument(collectionID uint, argument string) {
+	arg := fmt.Sprintf("OU%s", argument)
+
 	var market models.Market
 	if err := db.DB.Where("market_collection_id = ? AND code = ?",
-		collectionID, "OU"+argument).First(&market).Error; err != nil {
+		collectionID, arg).First(&market).Error; err != nil {
 		return
 	}
 
 	db.DB.Model(&models.Price{}).Where("market_id = ?", market.ID).
-		Update("active", false)
+		Update("inactive", false)
 }
 
 func (s *Server) getPricesBySport(sportName string, code string) ([]models.Price, error) {
