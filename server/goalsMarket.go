@@ -10,10 +10,6 @@ import (
 )
 
 func (s *Server) updateGoalsMarkets(sport, param string) error {
-	if _, exists := s.sportRoutines.Load(sport + "_goals_stop"); exists {
-		return nil
-	}
-
 	overPrices, err := s.getPricesBySport(sport, "OVER_"+param, false)
 	if err != nil {
 		return fmt.Errorf("error getting GOALS prices for %s: %v", sport, err)
@@ -74,11 +70,6 @@ func (s *Server) handleGoalsMarketLifecycle(sportName string) {
 			}(colID, argCopy, delay)
 		}
 	}
-
-	go func() {
-		time.Sleep(95 * time.Second)
-		s.sportRoutines.Store(sportName+"_goals_stop", true)
-	}()
 }
 
 func (s *Server) activateGoalsMarketWithArgument(collectionId uint, argument string) {

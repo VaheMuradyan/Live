@@ -61,6 +61,16 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 		}
 	}(time.NewTicker(time.Duration(interval) * time.Second))
 
+	go func(sportName string) {
+		time.Sleep(100 * time.Second)
+		end2, ok := s.sportRoutines.Load(sportName)
+		if ok {
+			if end, ok2 := end2.(chan bool); ok2 {
+				end <- true
+			}
+		}
+	}(sport)
+
 	return &live.SportResponse{
 		Success: true,
 		Message: fmt.Sprintf("Started %s coefficient updates", sport),

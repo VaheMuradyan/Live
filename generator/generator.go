@@ -30,7 +30,7 @@ func (cg *CoefficientGenerator) StartAllSportsGeneration() error {
 	for i, sport := range sports {
 		if err := cg.startSportWithInterval(sport.Name, intervals[i]); err != nil {
 			fmt.Printf("Error starting %s: %v\n", sport.Name, err)
-			continue
+			break
 		}
 	}
 

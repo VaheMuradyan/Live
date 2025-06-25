@@ -87,8 +87,8 @@
 
         .market-tabs {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 5px;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
             margin-bottom: 20px;
             background: #f0f0f0;
             border-radius: 10px;
@@ -96,13 +96,13 @@
         }
 
         .market-tab {
-            padding: 12px 15px;
+            padding: 15px 20px;
             text-align: center;
             cursor: pointer;
             border-radius: 8px;
             font-weight: bold;
             transition: all 0.3s ease;
-            font-size: 14px;
+            font-size: 16px;
         }
 
         .market-tab.active {
@@ -119,26 +119,12 @@
             background: #e8e8e8;
         }
 
-        .market-tab.main-tab {
+        .market-tab.main-tab.active {
             background: #2196F3;
         }
 
-        .market-tab.main-tab:not(.active) {
-            background: #E3F2FD;
-            color: #1976D2;
-        }
-
-        .market-tab.goals-25-tab.active {
+        .market-tab.goals-tab.active {
             background: #FF5722;
-        }
-
-        .market-tab.goals-35-tab.active {
-            background: #FF9800;
-        }
-
-        .market-tab.goals-45-tab.active {
-            background: #FFC107;
-            color: #333;
         }
 
         .market-content {
@@ -165,6 +151,155 @@
             min-height: 200px;
         }
 
+        /* Add after the existing .game-window styles */
+        .main-casino-window {
+            background: #1a1a1a;
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .main-game-header {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .main-event-info {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+
+        .main-event-name {
+            font-size: 16px;
+            color: #FFF;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .main-competition {
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .main-markets-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .main-market-row {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .main-market-row:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .main-market-row.updated {
+            background: rgba(33, 150, 243, 0.2);
+            border-color: #2196F3;
+            animation: mainRowPulse 1.5s ease-out;
+        }
+
+        @keyframes mainRowPulse {
+            0% {
+                background: rgba(33, 150, 243, 0.4);
+                transform: scale(1.02);
+            }
+            100% {
+                background: rgba(255,255,255,0.05);
+                transform: scale(1);
+            }
+        }
+
+        .main-market-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .main-market-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #FFF;
+            margin-bottom: 5px;
+        }
+
+        .main-price-name {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .main-coefficient-display {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .main-old-coeff {
+            font-size: 16px;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        .main-change-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .main-change-arrow {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+
+        .main-change-up { color: #4CAF50; }
+        .main-change-down { color: #f44336; }
+        .main-change-same { color: #666; }
+
+        .main-change-value {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .main-current-coeff {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2196F3;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .main-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #aaa;
+        }
+
         .game-window.updated {
             border-color: #4CAF50;
             background: #f1f8e9;
@@ -175,16 +310,174 @@
             border-left: 4px solid #2196F3;
         }
 
-        .game-window.goals-25-market {
+        .game-window.goals-market {
             border-left: 4px solid #FF5722;
         }
 
-        .game-window.goals-35-market {
-            border-left: 4px solid #FF9800;
+        /* Goals Market Specific Styles */
+        .goals-casino-window {
+            background: #1a1a1a;
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
 
-        .game-window.goals-45-market {
-            border-left: 4px solid #FFC107;
+        /*.goals-casino-window.updated {*/
+        /*    animation: goalsPulse 2s ease-out;*/
+        /*}*/
+
+        /*@keyframes goalsPulse {*/
+        /*    0% {*/
+        /*        background: #FF5722;*/
+        /*        transform: scale(1.01);*/
+        /*        box-shadow: 0 0 20px rgba(255, 87, 34, 0.6);*/
+        /*    }*/
+        /*    100% {*/
+        /*        background: #1a1a1a;*/
+        /*        transform: scale(1);*/
+        /*        box-shadow: 0 8px 25px rgba(0,0,0,0.3);*/
+        /*    }*/
+        /*}*/
+
+        .goals-game-header {
+            background: linear-gradient(135deg, #FF5722, #FF9800);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .goals-event-info {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+
+        .goals-event-name {
+            font-size: 16px;
+            color: #FFF;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .goals-competition {
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .goals-markets-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .goals-market-row {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .goals-market-row:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .goals-market-row.updated {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: #4CAF50;
+            animation: rowPulse 1.5s ease-out;
+        }
+
+        @keyframes rowPulse {
+            0% {
+                background: rgba(76, 175, 80, 0.4);
+                transform: scale(1.02);
+            }
+            100% {
+                background: rgba(255,255,255,0.05);
+                transform: scale(1);
+            }
+        }
+
+        .goals-market-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .goals-market-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #FFF;
+            margin-bottom: 5px;
+        }
+
+        .goals-price-name {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .goals-coefficient-display {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .goals-old-coeff {
+            font-size: 16px;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        .goals-change-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .goals-change-arrow {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+
+        .goals-change-up { color: #4CAF50; }
+        .goals-change-down { color: #f44336; }
+        .goals-change-same { color: #666; }
+
+        .goals-change-value {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .goals-current-coeff {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .goals-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #aaa;
         }
 
         @keyframes pulse {
@@ -325,21 +618,33 @@
             padding: 10px;
             border-radius: 8px;
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
         }
 
         .stat-item {
-            padding: 5px;
+            padding: 10px;
             border-radius: 5px;
             background: white;
+            font-weight: bold;
+        }
+
+        .goals-no-data {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            font-style: italic;
+            font-size: 18px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            border: 2px dashed rgba(255,255,255,0.1);
         }
     </style>
 </head>
 <body>
 <div class="header">
     <h1>🎯 Live Coefficient Updates</h1>
-    <p>Real-time sports betting coefficient changes - Separated Goals Parameters</p>
+    <p>Real-time sports betting coefficient changes - Casino Style Goals Display</p>
 </div>
 
 <div class="controls">
@@ -356,16 +661,12 @@
         <div class="sport-header football">⚽️ Football</div>
         <div class="stats-summary" id="football-stats">
             <div class="stat-item">Main: 0 games, 0 updates</div>
-            <div class="stat-item">Goals 25: 0 games, 0 updates</div>
-            <div class="stat-item">Goals 35: 0 games, 0 updates</div>
-            <div class="stat-item">Goals 45: 0 games, 0 updates</div>
+            <div class="stat-item">Goals: 0 games, 0 updates</div>
         </div>
 
         <div class="market-tabs">
-            <div class="market-tab main-tab active" onclick="switchMarket('football', 'main')">📊 Main (1X2)</div>
-            <div class="market-tab goals-25-tab" onclick="switchMarket('football', 'goals-25')">⚽ Goals 25</div>
-            <div class="market-tab goals-35-tab" onclick="switchMarket('football', 'goals-35')">⚽ Goals 35</div>
-            <div class="market-tab goals-45-tab" onclick="switchMarket('football', 'goals-45')">⚽ Goals 45</div>
+            <div class="market-tab main-tab active" onclick="switchMarket('football', 'main')">📊 Main Markets (1X2)</div>
+            <div class="market-tab goals-tab" onclick="switchMarket('football', 'goals')">⚽ Goals Markets (O/U)</div>
         </div>
 
         <div id="football-main" class="market-content active">
@@ -374,21 +675,9 @@
             </div>
         </div>
 
-        <div id="football-goals-25" class="market-content">
-            <div class="games-grid">
-                <div class="no-games">Waiting for goals 25 market updates...</div>
-            </div>
-        </div>
-
-        <div id="football-goals-35" class="market-content">
-            <div class="games-grid">
-                <div class="no-games">Waiting for goals 35 market updates...</div>
-            </div>
-        </div>
-
-        <div id="football-goals-45" class="market-content">
-            <div class="games-grid">
-                <div class="no-games">Waiting for goals 45 market updates...</div>
+        <div id="football-goals" class="market-content">
+            <div id="football-goals-container">
+                <div class="goals-no-data">Waiting for goals market updates...</div>
             </div>
         </div>
     </div>
@@ -397,16 +686,12 @@
         <div class="sport-header basketball">🏀 Basketball</div>
         <div class="stats-summary" id="basketball-stats">
             <div class="stat-item">Main: 0 games, 0 updates</div>
-            <div class="stat-item">Goals 25: 0 games, 0 updates</div>
-            <div class="stat-item">Goals 35: 0 games, 0 updates</div>
-            <div class="stat-item">Goals 45: 0 games, 0 updates</div>
+            <div class="stat-item">Goals: 0 games, 0 updates</div>
         </div>
 
         <div class="market-tabs">
-            <div class="market-tab main-tab active" onclick="switchMarket('basketball', 'main')">📊 Main (1X2)</div>
-            <div class="market-tab goals-25-tab" onclick="switchMarket('basketball', 'goals-25')">🏀 Goals 25</div>
-            <div class="market-tab goals-35-tab" onclick="switchMarket('basketball', 'goals-35')">🏀 Goals 35</div>
-            <div class="market-tab goals-45-tab" onclick="switchMarket('basketball', 'goals-45')">🏀 Goals 45</div>
+            <div class="market-tab main-tab active" onclick="switchMarket('basketball', 'main')">📊 Main Markets (1X2)</div>
+            <div class="market-tab goals-tab" onclick="switchMarket('basketball', 'goals')">🏀 Goals Markets (O/U)</div>
         </div>
 
         <div id="basketball-main" class="market-content active">
@@ -415,21 +700,9 @@
             </div>
         </div>
 
-        <div id="basketball-goals-25" class="market-content">
-            <div class="games-grid">
-                <div class="no-games">Waiting for goals 25 market updates...</div>
-            </div>
-        </div>
-
-        <div id="basketball-goals-35" class="market-content">
-            <div class="games-grid">
-                <div class="no-games">Waiting for goals 35 market updates...</div>
-            </div>
-        </div>
-
-        <div id="basketball-goals-45" class="market-content">
-            <div class="games-grid">
-                <div class="no-games">Waiting for goals 45 market updates...</div>
+        <div id="basketball-goals" class="market-content">
+            <div id="basketball-goals-container">
+                <div class="goals-no-data">Waiting for goals market updates...</div>
             </div>
         </div>
     </div>
@@ -438,16 +711,12 @@
         <div class="sport-header tennis">🎾 Tennis</div>
         <div class="stats-summary" id="tennis-stats">
             <div class="stat-item">Main: 0 games, 0 updates</div>
-            <div class="stat-item">Goals 25: 0 games, 0 updates</div>
-            <div class="stat-item">Goals 35: 0 games, 0 updates</div>
-            <div class="stat-item">Goals 45: 0 games, 0 updates</div>
+            <div class="stat-item">Goals: 0 games, 0 updates</div>
         </div>
 
         <div class="market-tabs">
-            <div class="market-tab main-tab active" onclick="switchMarket('tennis', 'main')">📊 Main (1X2)</div>
-            <div class="market-tab goals-25-tab" onclick="switchMarket('tennis', 'goals-25')">🎾 Goals 25</div>
-            <div class="market-tab goals-35-tab" onclick="switchMarket('tennis', 'goals-35')">🎾 Goals 35</div>
-            <div class="market-tab goals-45-tab" onclick="switchMarket('tennis', 'goals-45')">🎾 Goals 45</div>
+            <div class="market-tab main-tab active" onclick="switchMarket('tennis', 'main')">📊 Main Markets (1X2)</div>
+            <div class="market-tab goals-tab" onclick="switchMarket('tennis', 'goals')">🎾 Goals Markets (O/U)</div>
         </div>
 
         <div id="tennis-main" class="market-content active">
@@ -456,21 +725,9 @@
             </div>
         </div>
 
-        <div id="tennis-goals-25" class="market-content">
-            <div class="games-grid">
-                <div class="no-games">Waiting for goals 25 market updates...</div>
-            </div>
-        </div>
-
-        <div id="tennis-goals-35" class="market-content">
-            <div class="games-grid">
-                <div class="no-games">Waiting for goals 35 market updates...</div>
-            </div>
-        </div>
-
-        <div id="tennis-goals-45" class="market-content">
-            <div class="games-grid">
-                <div class="no-games">Waiting for goals 45 market updates...</div>
+        <div id="tennis-goals" class="market-content">
+            <div id="tennis-goals-container">
+                <div class="goals-no-data">Waiting for goals market updates...</div>
             </div>
         </div>
     </div>
@@ -481,14 +738,14 @@
     let centrifuge = null;
     let subscriptions = {};
     let gameData = {
-        football: { main: {}, 'goals-25': {}, 'goals-35': {}, 'goals-45': {} },
-        basketball: { main: {}, 'goals-25': {}, 'goals-35': {}, 'goals-45': {} },
-        tennis: { main: {}, 'goals-25': {}, 'goals-35': {}, 'goals-45': {} }
+        football: { main: {}, goals: {} },
+        basketball: { main: {}, goals: {} },
+        tennis: { main: {}, goals: {} }
     };
     let updateCounts = {
-        football: { main: 0, 'goals-25': 0, 'goals-35': 0, 'goals-45': 0 },
-        basketball: { main: 0, 'goals-25': 0, 'goals-35': 0, 'goals-45': 0 },
-        tennis: { main: 0, 'goals-25': 0, 'goals-35': 0, 'goals-45': 0 }
+        football: { main: 0, goals: 0 },
+        basketball: { main: 0, goals: 0 },
+        tennis: { main: 0, goals: 0 }
     };
 
     function log(message) {
@@ -532,34 +789,27 @@
     }
 
     function createGameId(data) {
-        return `${data.country}_${data.competition}_${data.event}_${data.market}_${data.price}`.replace(/[^a-zA-Z0-9]/g, '_');
+        return `${data.country}_${data.competition}_${data.event}`.replace(/[^a-zA-Z0-9]/g, '_');
+    }
+
+    function createMarketRowId(data) {
+        return `${data.market}_${data.price}`.replace(/[^a-zA-Z0-9]/g, '_');
     }
 
     function getMarketTypeFromData(data) {
-        // Determine market type based on price code
         if (data.market_collection_code === 'MAIN') {
             return 'main';
         }
-
-        // For goals markets, check the price code
-        if (data.price.includes('25')) {
-            return 'goals-25';
-        } else if (data.price.includes('35')) {
-            return 'goals-35';
-        } else if (data.price.includes('45')) {
-            return 'goals-45';
-        }
-
-        // Fallback to main if we can't determine
-        return 'main';
+        return 'goals';
     }
 
-    function updateGameWindow(sport, marketType, data) {
+    function updateMainMarket(sport, data) {
         const gameId = createGameId(data);
-        const container = document.querySelector(`#${sport}-${marketType} .games-grid`);
+        const marketRowId = createMarketRowId(data);
+        const container = document.querySelector(`#${sport}-main .games-grid`);
 
         if (!container) {
-            log(`Container not found for ${sport}-${marketType}`);
+            log(`Container not found for ${sport}-main`);
             return;
         }
 
@@ -570,31 +820,154 @@
         }
 
         // Update or create game data
-        if (!gameData[sport][marketType][gameId]) {
-            gameData[sport][marketType][gameId] = {
-                ...data,
+        if (!gameData[sport]['main'][gameId]) {
+            gameData[sport]['main'][gameId] = {
+                gameInfo: {
+                    country: data.country,
+                    competition: data.competition,
+                    event: data.event
+                },
+                markets: {},
                 updateCount: 0,
                 firstSeen: new Date()
             };
         }
 
-        gameData[sport][marketType][gameId] = {
-            ...gameData[sport][marketType][gameId],
+        // Update market data
+        gameData[sport]['main'][gameId].markets[marketRowId] = {
             ...data,
-            updateCount: gameData[sport][marketType][gameId].updateCount + 1,
             lastUpdate: new Date()
         };
+        gameData[sport]['main'][gameId].updateCount++;
 
         // Update counters
-        updateCounts[sport][marketType]++;
+        updateCounts[sport]['main']++;
 
         // Find existing window or create new one
-        let gameWindow = document.getElementById(`game_${gameId}`);
+        let gameWindow = document.getElementById(`main_game_${gameId}`);
 
         if (!gameWindow) {
             gameWindow = document.createElement('div');
-            gameWindow.id = `game_${gameId}`;
-            gameWindow.className = `game-window ${marketType}-market`;
+            gameWindow.id = `main_game_${gameId}`;
+            gameWindow.className = 'main-casino-window';
+            container.appendChild(gameWindow);
+        }
+
+        // Build the window content
+        const gameInfo = gameData[sport]['main'][gameId];
+        const marketsHtml = Object.entries(gameInfo.markets)
+            .sort((a, b) => a[1].market.localeCompare(b[1].market)) // Sort by market name
+            .map(([marketId, marketData]) => {
+                const change = marketData.new_coefficient - marketData.old_coefficient;
+                let changeClass = 'main-change-same';
+                let changeIcon = '➡️';
+                let changeText = '0.00';
+
+                if (change > 0) {
+                    changeClass = 'main-change-up';
+                    changeIcon = '⬆️';
+                    changeText = `+${change.toFixed(2)}`;
+                } else if (change < 0) {
+                    changeClass = 'main-change-down';
+                    changeIcon = '⬇️';
+                    changeText = change.toFixed(2);
+                }
+
+                return `
+                <div class="main-market-row" id="main_market_row_${gameId}_${marketId}">
+                    <div class="main-market-info">
+                        <div class="main-market-name">${marketData.market}</div>
+                        <div class="main-price-name">${marketData.price}</div>
+                    </div>
+                    <div class="main-coefficient-display">
+                        <div class="main-old-coeff">${marketData.old_coefficient.toFixed(2)}</div>
+                        <div class="main-change-indicator">
+                            <div class="main-change-arrow ${changeClass}">${changeIcon}</div>
+                            <div class="main-change-value ${changeClass}">${changeText}</div>
+                        </div>
+                        <div class="main-current-coeff">${marketData.new_coefficient.toFixed(2)}</div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+        // Update window content
+        gameWindow.innerHTML = `
+        <div class="main-game-header">
+            ${gameInfo.gameInfo.country} • ${gameInfo.gameInfo.competition}
+        </div>
+        <div class="main-event-info">
+            <div class="main-event-name">${gameInfo.gameInfo.event}</div>
+            <div class="main-competition">Main Markets - Live Coefficient</div>
+        </div>
+        <div class="main-markets-container">
+            ${marketsHtml}
+        </div>
+        <div class="main-footer">
+            <div class="last-update">Last Update: ${new Date(data.timestamp).toLocaleTimeString()}</div>
+            <div class="update-count">${gameInfo.updateCount} total updates</div>
+        </div>
+    `;
+
+        // Add animation to the specific market row that was updated
+        setTimeout(() => {
+            const updatedRow = document.getElementById(`main_market_row_${gameId}_${marketRowId}`);
+            if (updatedRow) {
+                updatedRow.classList.add('updated');
+                setTimeout(() => {
+                    updatedRow.classList.remove('updated');
+                }, 1500);
+            }
+        }, 100);
+    }
+
+    function updateGoalsMarket(sport, data) {
+        const gameId = createGameId(data);
+        const marketRowId = createMarketRowId(data);
+        const container = document.getElementById(`${sport}-goals-container`);
+
+        if (!container) {
+            log(`Container not found for ${sport}-goals`);
+            return;
+        }
+
+        // Remove "no data" message if it exists
+        const noData = container.querySelector('.goals-no-data');
+        if (noData) {
+            noData.remove();
+        }
+
+        // Update or create game data
+        if (!gameData[sport]['goals'][gameId]) {
+            gameData[sport]['goals'][gameId] = {
+                gameInfo: {
+                    country: data.country,
+                    competition: data.competition,
+                    event: data.event
+                },
+                markets: {},
+                updateCount: 0,
+                firstSeen: new Date()
+            };
+        }
+
+        // Update market data
+        gameData[sport]['goals'][gameId].markets[marketRowId] = {
+            ...data,
+            lastUpdate: new Date()
+        };
+        gameData[sport]['goals'][gameId].updateCount++;
+
+        // Update counters
+        updateCounts[sport]['goals']++;
+
+        // Find existing window or create new one
+        let gameWindow = document.getElementById(`goals_game_${gameId}`);
+
+        if (!gameWindow) {
+            gameWindow = document.createElement('div');
+            gameWindow.id = `goals_game_${gameId}`;
+            gameWindow.className = 'goals-casino-window';
             container.appendChild(gameWindow);
         }
 
@@ -604,51 +977,72 @@
             gameWindow.classList.remove('updated');
         }, 2000);
 
-        // Calculate change
-        const change = data.new_coefficient - data.old_coefficient;
-        let changeClass = 'change-same';
-        let changeIcon = '➡️';
-        let changeText = '0.00';
+        // Build the window content
+        const gameInfo = gameData[sport]['goals'][gameId];
+        const marketsHtml = Object.entries(gameInfo.markets)
+            .sort((a, b) => a[1].market.localeCompare(b[1].market)) // Sort by market name
+            .map(([marketId, marketData]) => {
+                const change = marketData.new_coefficient - marketData.old_coefficient;
+                let changeClass = 'goals-change-same';
+                let changeIcon = '➡️';
+                let changeText = '0.00';
 
-        if (change > 0) {
-            changeClass = 'change-up';
-            changeIcon = '⬆️';
-            changeText = `+${change.toFixed(2)}`;
-        } else if (change < 0) {
-            changeClass = 'change-down';
-            changeIcon = '⬇️';
-            changeText = change.toFixed(2);
-        }
+                if (change > 0) {
+                    changeClass = 'goals-change-up';
+                    changeIcon = '⬆️';
+                    changeText = `+${change.toFixed(2)}`;
+                } else if (change < 0) {
+                    changeClass = 'goals-change-down';
+                    changeIcon = '⬇️';
+                    changeText = change.toFixed(2);
+                }
+
+                return `
+                    <div class="goals-market-row" id="market_row_${gameId}_${marketId}">
+                        <div class="goals-market-info">
+                            <div class="goals-market-name">${marketData.market}</div>
+                            <div class="goals-price-name">${marketData.price}</div>
+                        </div>
+                        <div class="goals-coefficient-display">
+                            <div class="goals-old-coeff">${marketData.old_coefficient.toFixed(2)}</div>
+                            <div class="goals-change-indicator">
+                                <div class="goals-change-arrow ${changeClass}">${changeIcon}</div>
+                                <div class="goals-change-value ${changeClass}">${changeText}</div>
+                            </div>
+                            <div class="goals-current-coeff">${marketData.new_coefficient.toFixed(2)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
 
         // Update window content
         gameWindow.innerHTML = `
-            <div class="game-header">${data.country} • ${data.competition}</div>
-            <div class="game-details">
-                <div class="event-name">${data.event}</div>
-                <div class="market-info">${data.market} • ${data.price}</div>
+            <div class="goals-game-header">
+                ${gameInfo.gameInfo.country} • ${gameInfo.gameInfo.competition}
             </div>
-            <div class="coefficient-display">
-                <div class="coeff-section">
-                    <div class="coeff-label">Previous</div>
-                    <div class="old-coeff">${data.old_coefficient.toFixed(2)}</div>
-                </div>
-                <div class="change-indicator">
-                    <div class="change-arrow ${changeClass}">${changeIcon}</div>
-                    <div class="change-value ${changeClass}">${changeText}</div>
-                </div>
-                <div class="coeff-section">
-                    <div class="coeff-label">Current</div>
-                    <div class="current-coeff">${data.new_coefficient.toFixed(2)}</div>
-                </div>
+            <div class="goals-event-info">
+                <div class="goals-event-name">${gameInfo.gameInfo.event}</div>
+                <div class="goals-competition">Goals Markets - Live Coefficient</div>
             </div>
-            <div class="game-footer">
-                <div class="last-update">Last: ${new Date(data.timestamp).toLocaleTimeString()}</div>
-                <div class="update-count">${gameData[sport][marketType][gameId].updateCount} updates</div>
+            <div class="goals-markets-container">
+                ${marketsHtml}
+            </div>
+            <div class="goals-footer">
+                <div class="last-update">Last Update: ${new Date(data.timestamp).toLocaleTimeString()}</div>
+                <div class="update-count">${gameInfo.updateCount} total updates</div>
             </div>
         `;
 
-        // Update stats
-        updateStats();
+        // Add animation to the specific market row that was updated
+        setTimeout(() => {
+            const updatedRow = document.getElementById(`market_row_${gameId}_${marketRowId}`);
+            if (updatedRow) {
+                updatedRow.classList.add('updated');
+                setTimeout(() => {
+                    updatedRow.classList.remove('updated');
+                }, 1500);
+            }
+        }, 100);
     }
 
     function updateStats() {
@@ -656,17 +1050,17 @@
             const statsContainer = document.getElementById(`${sport}-stats`);
             const statItems = statsContainer.querySelectorAll('.stat-item');
 
-            const marketTypes = ['main', 'goals-25', 'goals-35', 'goals-45'];
-            const marketLabels = ['Main', 'Goals 25', 'Goals 35', 'Goals 45'];
+            const mainGames = Object.keys(gameData[sport]['main']).length;
+            const mainUpdates = updateCounts[sport]['main'];
+            const goalsGames = Object.keys(gameData[sport]['goals']).length;
+            const goalsUpdates = updateCounts[sport]['goals'];
 
-            marketTypes.forEach((marketType, index) => {
-                const games = Object.keys(gameData[sport][marketType]).length;
-                const updates = updateCounts[sport][marketType];
-
-                if (statItems[index]) {
-                    statItems[index].textContent = `${marketLabels[index]}: ${games} games, ${updates} updates`;
-                }
-            });
+            if (statItems[0]) {
+                statItems[0].textContent = `Main: ${mainGames} games, ${mainUpdates} updates`;
+            }
+            if (statItems[1]) {
+                statItems[1].textContent = `Goals: ${goalsGames} games, ${goalsUpdates} updates`;
+            }
         });
     }
 
@@ -700,7 +1094,8 @@
 
                 subscriptions[mainChannel].on('publication', function(ctx) {
                     log(`🎯 Received ${mainChannel} update: ` + JSON.stringify(ctx.data));
-                    updateGameWindow(sport, 'main', ctx.data);
+                    updateMainMarket(sport, ctx.data);
+                    updateStats();
                 });
 
                 subscriptions[mainChannel].subscribe();
@@ -717,9 +1112,8 @@
 
                 subscriptions[goalsChannel].on('publication', function(ctx) {
                     log(`🎯 Received ${goalsChannel} update: ` + JSON.stringify(ctx.data));
-                    // Determine which goals market this belongs to
-                    const marketType = getMarketTypeFromData(ctx.data);
-                    updateGameWindow(sport, marketType, ctx.data);
+                    updateGoalsMarket(sport, ctx.data);
+                    updateStats();
                 });
 
                 subscriptions[goalsChannel].subscribe();
