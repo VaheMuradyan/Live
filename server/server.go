@@ -44,7 +44,7 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 	stopChan := make(chan bool)
 	s.sportRoutines.Store(sport, stopChan)
 
-	s.expandTotalGoalsMarkets(sport)
+	s.handleGoalsMarketLifecycle(sport)
 
 	go func(ticker *time.Ticker) {
 		defer ticker.Stop()
@@ -79,14 +79,6 @@ func (s *Server) generateCoefficientUpdate(sport string) error {
 		}
 	}()
 
-	//TODO stex petqa aveacnem for loop wg.add of u konkret argumenti hamar
-	//go func() {
-	//	defer wg.Done()
-	//	if err := s.updateGoalsMarkets(sport); err != nil {
-	//		log.Println("END")
-	//	}
-	//}()
-
 	params := []string{"25", "35", "45"}
 
 	for _, param := range params {
@@ -100,43 +92,6 @@ func (s *Server) generateCoefficientUpdate(sport string) error {
 
 	wg.Wait()
 	return nil
-}
-
-func (s *Server) updateMainMarkets(sport string) error {
-	prices, err := s.getPricesBySportMAIN(sport, "MAIN")
-	if err != nil {
-		return fmt.Errorf("error getting MAIN prices for %s: %v", sport, err)
-	}
-
-	if len(prices) == 0 {
-		return fmt.Errorf("no active MAIN prices found for sport %s", sport)
-	}
-
-	randomPrice := prices[rand.Intn(len(prices))]
-	return s.updateCoefficient(&randomPrice)
-}
-
-func (s *Server) updateGoalsMarkets(sport, param string) error {
-	if _, exists := s.sportRoutines.Load(sport + "_goals_stop"); exists {
-		return nil
-	}
-
-	overPrices, err := s.getPricesBySportGOALS(sport, "OVER_"+param)
-	if err != nil {
-		return fmt.Errorf("error getting GOALS prices for %s: %v", sport, err)
-	}
-	underPrices, err := s.getPricesBySportGOALS(sport, "UNDER_"+param)
-	if err != nil {
-		return fmt.Errorf("error getting GOALS prices for %s: %v", sport, err)
-	}
-	allPrices := append(overPrices, underPrices...)
-
-	if len(allPrices) == 0 {
-		return fmt.Errorf("no active GOALS prices found for sport %s", sport)
-	}
-
-	randomPrice := allPrices[rand.Intn(len(allPrices))]
-	return s.updateCoefficient(&randomPrice)
 }
 
 func (s *Server) updateCoefficient(price *models.Price) error {
@@ -209,108 +164,24 @@ func (s *Server) sendToCentrifugo(price *models.Price) error {
 	return err
 }
 
-func (s *Server) expandTotalGoalsMarkets(sportName string) {
-	var collections []models.MarketCollection
-	err := db.DB.Preload("Event.Competition.Country.Sport").
-		Joins("JOIN events ON market_collections.event_id = events.id").
-		Joins("JOIN competitions ON events.competition_id = competitions.id").
-		Joins("JOIN countries ON competitions.country_id = countries.id").
-		Joins("JOIN sports ON countries.sport_id = sports.id").
-		Where("sports.name = ? AND market_collections.code = ?", sportName, "GOALS").
-		Find(&collections).Error
-
-	if err != nil {
-		log.Printf("Error getting goals collections for sport %s: %v", sportName, err)
-		return
-	}
-
-	for _, col := range collections {
-		s.activateGoalsMarketWithArgument(col.ID, "25")
-		s.activateGoalsMarketWithArgument(col.ID, "35")
-		s.activateGoalsMarketWithArgument(col.ID, "45")
-	}
-
-	for _, col := range collections {
-		for _, arg := range []string{"25", "35", "45"} {
-			argCopy := arg
-			colID := col.ID
-
-			var delay time.Duration
-			switch argCopy {
-			case "25":
-				delay = 30 * time.Second
-			case "35":
-				delay = 60 * time.Second
-			case "45":
-				delay = 90 * time.Second
-			}
-
-			go func(collectionID uint, argument string, d time.Duration) {
-				time.Sleep(d)
-				s.removeGoalsArgument(collectionID, argument)
-			}(colID, argCopy, delay)
-		}
-	}
-
-	go func() {
-		time.Sleep(95 * time.Second)
-		s.sportRoutines.Store(sportName+"_goals_stop", true)
-	}()
-}
-
-func (s *Server) activateGoalsMarketWithArgument(collectionId uint, argument string) {
-	arg := fmt.Sprintf("OU%s", argument)
-	var existingMarket models.Market
-	result := db.DB.Where("market_collection_id = ? AND code = ?",
-		collectionId, arg).First(&existingMarket)
-
-	if result.Error == nil {
-		db.DB.Model(&models.Price{}).Where("market_id = ?", existingMarket.ID).
-			Update("active", true)
-		return
-	}
-}
-
-func (s *Server) removeGoalsArgument(collectionID uint, argument string) {
-	arg := fmt.Sprintf("OU%s", argument)
-
-	var market models.Market
-	if err := db.DB.Where("market_collection_id = ? AND code = ?",
-		collectionID, arg).First(&market).Error; err != nil {
-		return
-	}
-
-	db.DB.Model(&models.Price{}).Where("market_id = ?", market.ID).
-		Update("active", false)
-}
-
-// todo flag avelacnem u subquery
-func (s *Server) getPricesBySportMAIN(sportName string, marketCode string) ([]models.Price, error) {
+func (s *Server) getPricesBySport(sportName string, filterValue string, flag bool) ([]models.Price, error) {
 	var prices []models.Price
-	err := db.DB.Preload("Market.MarketCollection.Event.Competition.Country.Sport").
+
+	query := db.DB.Preload("Market.MarketCollection.Event.Competition.Country.Sport").
 		Joins("JOIN markets ON prices.market_id = markets.id").
 		Joins("JOIN market_collections ON markets.market_collection_id = market_collections.id").
 		Joins("JOIN events ON market_collections.event_id = events.id").
 		Joins("JOIN competitions ON events.competition_id = competitions.id").
 		Joins("JOIN countries ON competitions.country_id = countries.id").
 		Joins("JOIN sports ON countries.sport_id = sports.id").
-		Where("sports.name = ? AND prices.active = ? AND prices.status = ? AND market_collections.code = ?",
-			sportName, true, "active", marketCode).
-		Find(&prices).Error
-	return prices, err
-}
+		Where("sports.name = ? AND prices.active = ? AND prices.status = ?", sportName, true, "active")
 
-func (s *Server) getPricesBySportGOALS(sportName string, priceCode string) ([]models.Price, error) {
-	var prices []models.Price
-	err := db.DB.Preload("Market.MarketCollection.Event.Competition.Country.Sport").
-		Joins("JOIN markets ON prices.market_id = markets.id").
-		Joins("JOIN market_collections ON markets.market_collection_id = market_collections.id").
-		Joins("JOIN events ON market_collections.event_id = events.id").
-		Joins("JOIN competitions ON events.competition_id = competitions.id").
-		Joins("JOIN countries ON competitions.country_id = countries.id").
-		Joins("JOIN sports ON countries.sport_id = sports.id").
-		Where("sports.name = ? AND prices.active = ? AND prices.status = ? AND prices.code = ?",
-			sportName, true, "active", priceCode).
-		Find(&prices).Error
+	if flag {
+		query = query.Where("market_collections.code = ?", filterValue)
+	} else {
+		query = query.Where("prices.code = ?", filterValue)
+	}
+
+	err := query.Find(&prices).Error
 	return prices, err
 }
