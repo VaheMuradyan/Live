@@ -7,87 +7,79 @@ import (
 
 type Country struct {
 	gorm.Model
-	Name         string        `json:"name"`
-	Code         string        `gorm:"unique;size:3" json:"code"`
-	SportID      uint          `json:"sport_id"`
-	Sport        Sport         `gorm:"foreignKey:SportID" json:"sport,omitempty"`
-	Competitions []Competition `gorm:"foreignKey:CountryID" json:"competitions,omitempty"`
+	Name         string
+	Code         string `gorm:"unique;size:3"`
+	SportID      uint
+	Sport        Sport         `gorm:"foreignKey:SportID"`
+	Competitions []Competition `gorm:"foreignKey:CountryID"`
 }
 
 type Competition struct {
 	gorm.Model
-	Name      string  `json:"name"`
-	CountryID uint    `json:"country_id"`
-	Country   Country `gorm:"foreignKey:CountryID" json:"country,omitempty"`
-	Teams     []Team  `gorm:"many2many:competition_teams;" json:"teams,omitempty"`
-	Events    []Event `gorm:"foreignKey:CompetitionID" json:"events,omitempty"`
+	Name      string
+	CountryID uint
+	Country   Country `gorm:"foreignKey:CountryID"`
+	Teams     []Team  `gorm:"many2many:competition_teams;"`
+	Events    []Event `gorm:"foreignKey:CompetitionID"`
 }
 
 type Event struct {
 	gorm.Model
-	Name              string             `json:"name"`
-	CompetitionID     uint               `json:"competition_id"`
-	Competition       Competition        `gorm:"foreignKey:CompetitionID" json:"competition,omitempty"`
-	MarketCollections []MarketCollection `gorm:"foreignKey:EventID" json:"market_collections,omitempty"`
-	Teams             []Team             `gorm:"many2many:event_teams;" json:"teams,omitempty"`
-	StartTime         time.Time          `json:"start_time"`
+	Name              string
+	CompetitionID     uint
+	Competition       Competition        `gorm:"foreignKey:CompetitionID"`
+	MarketCollections []MarketCollection `gorm:"foreignKey:EventID"`
+	Teams             []Team             `gorm:"many2many:event_teams;"`
+	StartTime         time.Time
 }
 
 type MarketCollection struct {
 	gorm.Model
-	Name    string   `json:"name"`
-	Code    string   `json:"code"`
-	EventID uint     `json:"event_id"`
-	Event   Event    `gorm:"foreignKey:EventID" json:"event,omitempty"`
-	Markets []Market `gorm:"foreignKey:MarketCollectionID" json:"markets,omitempty"`
+	Name    string
+	Code    string
+	EventID uint
+	Event   Event    `gorm:"foreignKey:EventID"`
+	Markets []Market `gorm:"foreignKey:MarketCollectionID"`
 }
 
 type Market struct {
 	gorm.Model
-	Name               string           `json:"name"`
-	Code               string           `json:"code"`
-	Type               string           `json:"type"`
-	MarketCollectionID uint             `json:"market_collection_id"`
-	MarketCollection   MarketCollection `gorm:"foreignKey:MarketCollectionID" json:"market_collection,omitempty"`
-	Prices             []Price          `gorm:"foreignKey:MarketID" json:"prices,omitempty"`
-	LastUpdated        time.Time        `json:"last_updated"`
+	Name               string
+	Code               string
+	Type               string
+	MarketCollectionID uint
+	MarketCollection   MarketCollection `gorm:"foreignKey:MarketCollectionID" `
+	Prices             []Price          `gorm:"foreignKey:MarketID"`
+	LastUpdated        time.Time
 }
 
 type Price struct {
 	gorm.Model
-	Name                string        `json:"name"`
-	Code                string        `json:"code"`
-	MarketID            uint          `json:"market_id"`
-	Market              Market        `gorm:"foreignKey:MarketID" json:"market,omitempty"`
-	CurrentCoefficient  float64       `gorm:"type:decimal(9,4);" json:"current_coefficient"`
-	PreviousCoefficient float64       `gorm:"type:decimal(9,4);" json:"previous_coefficient"`
-	Status              string        `gorm:"default:'active'" json:"status"`
-	Active              bool          `gorm:"default:true" json:"active"`
-	Coefficients        []Coefficient `gorm:"foreignKey:PriceID" json:"coefficients,omitempty"`
-	LastUpdated         time.Time     `json:"last_updated"`
-}
-
-type Coefficient struct {
-	gorm.Model
-	PriceID uint    `json:"price_id"`
-	Price   Price   `gorm:"foreignKey:PriceID" json:"price,omitempty"`
-	Value   float64 `gorm:"type:decimal(9,4)" json:"value"`
+	Name                string
+	Code                string
+	MarketID            uint
+	Market              Market  `gorm:"foreignKey:MarketID"`
+	CurrentCoefficient  float64 `gorm:"type:decimal(9,4);"`
+	PreviousCoefficient float64 `gorm:"type:decimal(9,4);"`
+	Status              string  `gorm:"default:'active'"`
+	Active              bool    `gorm:"default:true"`
+	LastUpdated         time.Time
 }
 type Team struct {
 	gorm.Model
-	Name         string        `json:"name"`
-	Rating       int           `json:"rating"`
-	CountryID    uint          `json:"country_id"`
-	Country      Country       `gorm:"foreignKey:CountryID" json:"country,omitempty"`
-	Competitions []Competition `gorm:"many2many:competition_teams;" json:"competitions,omitempty"`
-	Events       []Event       `gorm:"many2many:event_teams;" json:"events,omitempty"`
-	Sports       []Sport       `gorm:"many2many:sport_teams;" json:"sports,omitempty"`
+	Name         string
+	Rating       int
+	CountryID    uint
+	Country      Country       `gorm:"foreignKey:CountryID"`
+	Competitions []Competition `gorm:"many2many:competition_teams;"`
+	Events       []Event       `gorm:"many2many:event_teams;"`
+	Sports       []Sport       `gorm:"many2many:sport_teams;"`
 }
 
 type Sport struct {
 	gorm.Model
-	Name      string    `json:"name"`
-	Code      string    `gorm:"unique" json:"code"`
-	Countries []Country `gorm:"foreignKey:SportID" json:"countries,omitempty"`
-	Teams     []Team    `gorm:"many2many:sport_teams;" json:"teams,omitempty"`
+	Name      string
+	Code      string    `gorm:"unique"`
+	Countries []Country `gorm:"foreignKey:SportID"`
+	Teams     []Team    `gorm:"many2many:sport_teams;"`
 }

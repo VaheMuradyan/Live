@@ -184,7 +184,7 @@ func (s *Server) getPricesBySport(sportName string, filterValue string, flag boo
 		Joins("JOIN competitions ON events.competition_id = competitions.id").
 		Joins("JOIN countries ON competitions.country_id = countries.id").
 		Joins("JOIN sports ON countries.sport_id = sports.id").
-		Where("sports.name = ? AND prices.active = ? AND prices.status = ?", sportName, true, "active")
+		Where("sports.name = ? AND prices.active = ?", sportName, true)
 
 	if flag {
 		query = query.Where("market_collections.code = ?", filterValue)
