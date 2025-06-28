@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	CoefficientService_StartSportUpdates_FullMethodName = "/live.CoefficientService/StartSportUpdates"
+	CoefficientService_StartEvents_FullMethodName       = "/live.CoefficientService/StartEvents"
 )
 
 // CoefficientServiceClient is the client API for CoefficientService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CoefficientServiceClient interface {
 	StartSportUpdates(ctx context.Context, in *SportRequest, opts ...grpc.CallOption) (*SportResponse, error)
+	StartEvents(ctx context.Context, in *EventRequest, opts ...grpc.CallOption) (*EventResponse, error)
 }
 
 type coefficientServiceClient struct {
@@ -47,11 +49,22 @@ func (c *coefficientServiceClient) StartSportUpdates(ctx context.Context, in *Sp
 	return out, nil
 }
 
+func (c *coefficientServiceClient) StartEvents(ctx context.Context, in *EventRequest, opts ...grpc.CallOption) (*EventResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EventResponse)
+	err := c.cc.Invoke(ctx, CoefficientService_StartEvents_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CoefficientServiceServer is the server API for CoefficientService service.
 // All implementations must embed UnimplementedCoefficientServiceServer
 // for forward compatibility.
 type CoefficientServiceServer interface {
 	StartSportUpdates(context.Context, *SportRequest) (*SportResponse, error)
+	StartEvents(context.Context, *EventRequest) (*EventResponse, error)
 	mustEmbedUnimplementedCoefficientServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedCoefficientServiceServer struct{}
 
 func (UnimplementedCoefficientServiceServer) StartSportUpdates(context.Context, *SportRequest) (*SportResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartSportUpdates not implemented")
+}
+func (UnimplementedCoefficientServiceServer) StartEvents(context.Context, *EventRequest) (*EventResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartEvents not implemented")
 }
 func (UnimplementedCoefficientServiceServer) mustEmbedUnimplementedCoefficientServiceServer() {}
 func (UnimplementedCoefficientServiceServer) testEmbeddedByValue()                            {}
@@ -104,6 +120,24 @@ func _CoefficientService_StartSportUpdates_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CoefficientService_StartEvents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoefficientServiceServer).StartEvents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CoefficientService_StartEvents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoefficientServiceServer).StartEvents(ctx, req.(*EventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CoefficientService_ServiceDesc is the grpc.ServiceDesc for CoefficientService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var CoefficientService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StartSportUpdates",
 			Handler:    _CoefficientService_StartSportUpdates_Handler,
+		},
+		{
+			MethodName: "StartEvents",
+			Handler:    _CoefficientService_StartEvents_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

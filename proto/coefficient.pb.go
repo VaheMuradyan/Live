@@ -133,6 +133,102 @@ func (x *SportResponse) GetSport() string {
 	return ""
 }
 
+type EventRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Event           string                 `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
+	ScoreUpdateTime uint32                 `protobuf:"varint,2,opt,name=score_update_time,json=scoreUpdateTime,proto3" json:"score_update_time,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *EventRequest) Reset() {
+	*x = EventRequest{}
+	mi := &file_proto_coefficient_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EventRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventRequest) ProtoMessage() {}
+
+func (x *EventRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_coefficient_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EventRequest.ProtoReflect.Descriptor instead.
+func (*EventRequest) Descriptor() ([]byte, []int) {
+	return file_proto_coefficient_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *EventRequest) GetEvent() string {
+	if x != nil {
+		return x.Event
+	}
+	return ""
+}
+
+func (x *EventRequest) GetScoreUpdateTime() uint32 {
+	if x != nil {
+		return x.ScoreUpdateTime
+	}
+	return 0
+}
+
+type EventResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EventResponse) Reset() {
+	*x = EventResponse{}
+	mi := &file_proto_coefficient_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EventResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventResponse) ProtoMessage() {}
+
+func (x *EventResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_coefficient_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EventResponse.ProtoReflect.Descriptor instead.
+func (*EventResponse) Descriptor() ([]byte, []int) {
+	return file_proto_coefficient_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *EventResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_proto_coefficient_proto protoreflect.FileDescriptor
 
 const file_proto_coefficient_proto_rawDesc = "" +
@@ -144,9 +240,15 @@ const file_proto_coefficient_proto_rawDesc = "" +
 	"\rSportResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x14\n" +
-	"\x05sport\x18\x03 \x01(\tR\x05sport2R\n" +
+	"\x05sport\x18\x03 \x01(\tR\x05sport\"P\n" +
+	"\fEventRequest\x12\x14\n" +
+	"\x05event\x18\x01 \x01(\tR\x05event\x12*\n" +
+	"\x11score_update_time\x18\x02 \x01(\rR\x0fscoreUpdateTime\")\n" +
+	"\rEventResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\x8a\x01\n" +
 	"\x12CoefficientService\x12<\n" +
-	"\x11StartSportUpdates\x12\x12.live.SportRequest\x1a\x13.live.SportResponseB)Z'github.com/VaheMuradyan/Live/proto;liveb\x06proto3"
+	"\x11StartSportUpdates\x12\x12.live.SportRequest\x1a\x13.live.SportResponse\x126\n" +
+	"\vStartEvents\x12\x12.live.EventRequest\x1a\x13.live.EventResponseB)Z'github.com/VaheMuradyan/Live/proto;liveb\x06proto3"
 
 var (
 	file_proto_coefficient_proto_rawDescOnce sync.Once
@@ -160,16 +262,20 @@ func file_proto_coefficient_proto_rawDescGZIP() []byte {
 	return file_proto_coefficient_proto_rawDescData
 }
 
-var file_proto_coefficient_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_coefficient_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_proto_coefficient_proto_goTypes = []any{
 	(*SportRequest)(nil),  // 0: live.SportRequest
 	(*SportResponse)(nil), // 1: live.SportResponse
+	(*EventRequest)(nil),  // 2: live.EventRequest
+	(*EventResponse)(nil), // 3: live.EventResponse
 }
 var file_proto_coefficient_proto_depIdxs = []int32{
 	0, // 0: live.CoefficientService.StartSportUpdates:input_type -> live.SportRequest
-	1, // 1: live.CoefficientService.StartSportUpdates:output_type -> live.SportResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	2, // 1: live.CoefficientService.StartEvents:input_type -> live.EventRequest
+	1, // 2: live.CoefficientService.StartSportUpdates:output_type -> live.SportResponse
+	3, // 3: live.CoefficientService.StartEvents:output_type -> live.EventResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -186,7 +292,7 @@ func file_proto_coefficient_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_coefficient_proto_rawDesc), len(file_proto_coefficient_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

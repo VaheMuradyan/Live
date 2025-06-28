@@ -19,10 +19,14 @@ func StartClient() {
 	defer conn.Close()
 	client := live.NewCoefficientServiceClient(conn)
 
-	generator := generator.NewCoefficientGenerator(client)
+	generaTor := generator.NewCoefficientGenerator(client)
 
-	if err = generator.StartAllSportsGeneration(); err != nil {
+	if err = generaTor.StartAllSportsGeneration(); err != nil {
 		log.Fatalf("Failed to start coefficient generation: %v", err)
+	}
+
+	if err = generaTor.StartAllEvents(); err != nil {
+		log.Fatalf("Failed to start coefficient events: %v", err)
 	}
 
 	select {}

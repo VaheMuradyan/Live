@@ -6,6 +6,7 @@ option go_package = "github.com/VaheMuradyan/Live/proto;live";
 
 service CoefficientService {
   rpc StartSportUpdates(SportRequest) returns (SportResponse);
+  rpc StartEvents(EventRequest) returns (EventResponse);
 }
 
 message SportRequest {
@@ -17,4 +18,13 @@ message SportResponse {
   bool success = 1;
   string message = 2;
   string sport = 3;
+}
+
+message EventRequest {
+  string event = 1;
+  uint32 score_update_time = 2;
+}
+
+message EventResponse{
+  bool success = 1;
 }

@@ -46,20 +46,20 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 
 	s.handleGoalsMarketLifecycle(sport)
 
-	go func(ticker *time.Ticker) {
+	go func(ticker *time.Ticker, sportName string, stopChan2 chan bool) {
 		defer ticker.Stop()
 		for {
 			select {
-			case <-stopChan:
+			case <-stopChan2:
 				fmt.Println("Goroutine stopped")
 				return
 			case <-ticker.C:
-				if err := s.generateCoefficientUpdate(sport); err != nil {
+				if err := s.generateCoefficientUpdate(sportName); err != nil {
 					log.Printf("Error updating coefficient for %s: %v", sport, err)
 				}
 			}
 		}
-	}(time.NewTicker(time.Duration(interval) * time.Second))
+	}(time.NewTicker(time.Duration(interval)*time.Second), sport, stopChan)
 
 	go func(sportName string) {
 		time.Sleep(100 * time.Second)
@@ -75,6 +75,44 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 		Success: true,
 		Message: fmt.Sprintf("Started %s coefficient updates", sport),
 		Sport:   sport,
+	}, nil
+}
+
+func (s *Server) StartEvents(ctx context.Context, req *live.EventRequest) (*live.EventResponse, error) {
+	event := req.Event
+	interval := req.ScoreUpdateTime
+
+	stopChan := make(chan bool)
+	s.sportRoutines.Store(event, stopChan)
+	s.handleScoreForEvent(event)
+
+	go func(ticker *time.Ticker, eventName string, stopChan2 chan bool) {
+		defer ticker.Stop()
+		for {
+			select {
+			case <-stopChan2:
+				fmt.Println("Event stopped")
+				return
+			case <-ticker.C:
+				if err := s.startEvent(eventName); err != nil {
+					log.Printf("Error updating score for %s: %v", eventName, err)
+				}
+			}
+		}
+	}(time.NewTicker(time.Duration(interval)*time.Second), event, stopChan)
+
+	go func(eventName string) {
+		time.Sleep(100 * time.Second)
+		end2, ok := s.sportRoutines.Load(eventName)
+		if ok {
+			if end, ok2 := end2.(chan bool); ok2 {
+				end <- true
+			}
+		}
+	}(event)
+
+	return &live.EventResponse{
+		Success: true,
 	}, nil
 }
 
@@ -104,6 +142,7 @@ func (s *Server) generateCoefficientUpdate(sport string) error {
 	return nil
 }
 
+// todo poxel tetev logika avelacnel
 func (s *Server) updateCoefficient(price *models.Price) error {
 	oldCoeff := price.CurrentCoefficient
 
@@ -173,6 +212,78 @@ func (s *Server) sendToCentrifugo(price *models.Price) error {
 
 	return err
 }
+
+func (s *Server) startEvent(eventName string) error {
+	var score models.Score
+
+	query := `
+	SELECT scores.*
+	FROM scores
+	JOIN events ON events.id=scores.event_id
+	WHERE events.name = ?
+	`
+
+	err := db.DB.Raw(query, eventName).Scan(&score).Error
+	if err != nil {
+		log.Printf("Error getting score for %s: %v", eventName, err)
+		return err
+	}
+
+	currentScoreTeam1 := score.Team1Score
+	currentScoreTeam2 := score.Team2Score
+	total := score.Total
+
+	rand.Seed(time.Now().UnixNano())
+
+	x := rand.Intn(2)
+
+	switch x {
+	case 0:
+		currentScoreTeam1++
+		score.Team1Score = currentScoreTeam1
+		total++
+	case 1:
+		currentScoreTeam2++
+		score.Team2Score = currentScoreTeam2
+		total++
+	}
+	score.Total = total
+
+	err = db.DB.Save(&score).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Server) handleScoreForEvent(eventName string) {
+	var score models.Score
+
+	query := `
+	SELECT scores.*
+	FROM scores
+	JOIN events ON events.id = scores.event_id
+	WHERE events.name = ?
+	`
+
+	err := db.DB.Raw(query, eventName).Scan(&score).Error
+	if err != nil {
+		log.Printf("Error getting score for %s: %v", eventName, err)
+		return
+	}
+
+	score.Team1Score = 0
+	score.Team2Score = 0
+	score.Total = 0
+
+	err = db.DB.Save(&score).Error
+	if err != nil {
+		log.Printf("Error updating score ID %d: %v", score.ID, err)
+	}
+}
+
+//TODO petqa querinerov prost@ grvi vor karenam haskanam vonca taeq@ hendl anelu
 
 func (s *Server) getPricesBySport(sportName string, filterValue string, flag bool) ([]models.Price, error) {
 	var prices []models.Price

@@ -25,7 +25,7 @@ type Competition struct {
 
 type Event struct {
 	gorm.Model
-	Name              string
+	Name              string `gorm:"unique;size:255"`
 	CompetitionID     uint
 	Competition       Competition        `gorm:"foreignKey:CompetitionID"`
 	MarketCollections []MarketCollection `gorm:"foreignKey:EventID"`
@@ -61,7 +61,6 @@ type Price struct {
 	Market              Market  `gorm:"foreignKey:MarketID"`
 	CurrentCoefficient  float64 `gorm:"type:decimal(9,4);"`
 	PreviousCoefficient float64 `gorm:"type:decimal(9,4);"`
-	Status              string  `gorm:"default:'active'"`
 	Active              bool    `gorm:"default:true"`
 	LastUpdated         time.Time
 }
@@ -82,4 +81,13 @@ type Sport struct {
 	Code      string    `gorm:"unique"`
 	Countries []Country `gorm:"foreignKey:SportID"`
 	Teams     []Team    `gorm:"many2many:sport_teams;"`
+}
+
+type Score struct {
+	ID         uint `gorm:"primaryKey;autoIncrement"`
+	EventID    uint
+	Event      Event `gorm:"foreignKey:EventID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Team1Score int
+	Team2Score int
+	Total      int
 }
