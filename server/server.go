@@ -2,8 +2,13 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	apiproto "github.com/VaheMuradyan/Live/centrifugo"
 	"github.com/VaheMuradyan/Live/db/models"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 	"log"
 	"math/rand"
 	"strings"
@@ -12,7 +17,6 @@ import (
 
 	"github.com/VaheMuradyan/Live/db"
 	"github.com/VaheMuradyan/Live/proto"
-	"github.com/go-resty/resty/v2"
 )
 
 const (
@@ -23,10 +27,21 @@ const (
 type Server struct {
 	live.UnimplementedCoefficientServiceServer
 	sportRoutines sync.Map
+	cfConn        *grpc.ClientConn
+	cfClient      apiproto.CentrifugoApiClient
 }
 
 func NewServer() *Server {
+
+	conn, err := grpc.Dial("localhost:10000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("Failed to connect to Centrifugo: %v", err)
+	}
+
+	client := apiproto.NewCentrifugoApiClient(conn)
 	return &Server{
+		cfConn:        conn,
+		cfClient:      client,
 		sportRoutines: sync.Map{},
 	}
 }
@@ -182,6 +197,11 @@ func (s *Server) updateCoefficient(price *models.Price) error {
 }
 
 func (s *Server) sendToCentrifugo(price *models.Price) error {
+	md := metadata.New(map[string]string{
+		"authorization": "apikey " + apiKey,
+	})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
 	sport := price.Market.MarketCollection.Event.Competition.Country.Sport.Name
 	marketCollectionCode := price.Market.MarketCollection.Code
 	data := map[string]interface{}{
@@ -201,20 +221,17 @@ func (s *Server) sendToCentrifugo(price *models.Price) error {
 
 	channelName := strings.ToLower(sport) + "_" + strings.ToLower(marketCollectionCode)
 
-	payload := map[string]interface{}{
-		"method": "publish",
-		"params": map[string]interface{}{
-			"channel": channelName,
-			"data":    data,
-		},
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return err
 	}
 
-	client := resty.New()
-	_, err := client.R().
-		SetHeader("Content-Type", "application/json").
-		SetHeader("Authorization", "apikey "+apiKey).
-		SetBody(payload).
-		Post(apiUrl)
+	req := &apiproto.PublishRequest{
+		Channel: channelName,
+		Data:    jsonData,
+	}
+
+	_, err = s.cfClient.Publish(ctx, req)
 
 	return err
 }
