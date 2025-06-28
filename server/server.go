@@ -26,7 +26,9 @@ type Server struct {
 }
 
 func NewServer() *Server {
-	return &Server{}
+	return &Server{
+		sportRoutines: sync.Map{},
+	}
 }
 
 func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) (*live.SportResponse, error) {
@@ -62,7 +64,7 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 	}(time.NewTicker(time.Duration(interval)*time.Second), sport, stopChan)
 
 	go func(sportName string) {
-		time.Sleep(100 * time.Second)
+		time.Sleep(160 * time.Second)
 		end2, ok := s.sportRoutines.Load(sportName)
 		if ok {
 			if end, ok2 := end2.(chan bool); ok2 {
@@ -102,7 +104,7 @@ func (s *Server) StartEvents(ctx context.Context, req *live.EventRequest) (*live
 	}(time.NewTicker(time.Duration(interval)*time.Second), event, stopChan)
 
 	go func(eventName string) {
-		time.Sleep(100 * time.Second)
+		time.Sleep(160 * time.Second)
 		end2, ok := s.sportRoutines.Load(eventName)
 		if ok {
 			if end, ok2 := end2.(chan bool); ok2 {
@@ -118,7 +120,7 @@ func (s *Server) StartEvents(ctx context.Context, req *live.EventRequest) (*live
 
 func (s *Server) generateCoefficientUpdate(sport string) error {
 	var wg sync.WaitGroup
-	wg.Add(4)
+	wg.Add(6)
 
 	go func() {
 		defer wg.Done()
@@ -127,7 +129,7 @@ func (s *Server) generateCoefficientUpdate(sport string) error {
 		}
 	}()
 
-	params := []string{"25", "35", "45"}
+	params := []string{"[0.5]", "[1.5]", "[2.5]", "[3.5]", "[4.5]"}
 
 	for _, param := range params {
 		go func(p string) {
@@ -142,8 +144,12 @@ func (s *Server) generateCoefficientUpdate(sport string) error {
 	return nil
 }
 
-// todo poxel tetev logika avelacnel
 func (s *Server) updateCoefficient(price *models.Price) error {
+	//score, err := s.getScore(price)
+	//if err != nil {
+	//	return err
+	//}
+
 	oldCoeff := price.CurrentCoefficient
 
 	changePercent := (rand.Float64() - 0.5) * 0.4
@@ -183,7 +189,7 @@ func (s *Server) sendToCentrifugo(price *models.Price) error {
 		"country":                price.Market.MarketCollection.Event.Competition.Country.Name,
 		"competition":            price.Market.MarketCollection.Event.Competition.Name,
 		"event":                  price.Market.MarketCollection.Event.Name,
-		"market":                 price.Market.Name,
+		"market":                 price.Code,
 		"market_type":            price.Market.Type,
 		"market_collection_code": price.Market.MarketCollection.Code,
 		"price":                  price.Name,
@@ -305,4 +311,21 @@ func (s *Server) getPricesBySport(sportName string, filterValue string, flag boo
 
 	err := query.Find(&prices).Error
 	return prices, err
+}
+
+func (s *Server) getScore(price *models.Price) (*models.Score, error) {
+	var score models.Score
+
+	err := db.DB.Table("scores").
+		Joins("JOIN events ON scores.event_id = events.id").
+		Joins("JOIN market_collections ON events.id = market_collections.event_id").
+		Joins("JOIN markets ON market_collections.id = markets.market_collection_id").
+		Where("markets.id = ?", price.MarketID).
+		First(&score).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &score, nil
 }

@@ -10,11 +10,11 @@ import (
 )
 
 func (s *Server) updateGoalsMarkets(sport, param string) error {
-	overPrices, err := s.getPricesBySport(sport, "OVER_"+param, false)
+	overPrices, err := s.getPricesBySport(sport, "OVER"+param, false)
 	if err != nil {
 		return fmt.Errorf("error getting GOALS prices for %s: %v", sport, err)
 	}
-	underPrices, err := s.getPricesBySport(sport, "UNDER_"+param, false)
+	underPrices, err := s.getPricesBySport(sport, "UNDER"+param, false)
 	if err != nil {
 		return fmt.Errorf("error getting GOALS prices for %s: %v", sport, err)
 	}
@@ -44,24 +44,30 @@ func (s *Server) handleGoalsMarketLifecycle(sportName string) {
 	}
 
 	for _, col := range collections {
+		s.activateGoalsMarketWithArgument(col.ID, "05")
+		s.activateGoalsMarketWithArgument(col.ID, "15")
 		s.activateGoalsMarketWithArgument(col.ID, "25")
 		s.activateGoalsMarketWithArgument(col.ID, "35")
 		s.activateGoalsMarketWithArgument(col.ID, "45")
 	}
 
 	for _, col := range collections {
-		for _, arg := range []string{"25", "35", "45"} {
+		for _, arg := range []string{"05", "15", "25", "35", "45"} {
 			argCopy := arg
 			colID := col.ID
 
 			var delay time.Duration
 			switch argCopy {
-			case "25":
+			case "05":
 				delay = 30 * time.Second
-			case "35":
+			case "15":
 				delay = 60 * time.Second
-			case "45":
+			case "25":
 				delay = 90 * time.Second
+			case "35":
+				delay = 120 * time.Second
+			case "45":
+				delay = 150 * time.Second
 			}
 
 			go func(collectionID uint, argument string, d time.Duration) {

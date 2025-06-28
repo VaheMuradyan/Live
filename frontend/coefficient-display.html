@@ -142,16 +142,7 @@
             margin-top: 20px;
         }
 
-        .game-window {
-            background: #fafafa;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.3s ease;
-            min-height: 200px;
-        }
-
-        /* Add after the existing .game-window styles */
+        /* Main Markets Styles */
         .main-casino-window {
             background: #1a1a1a;
             color: white;
@@ -300,21 +291,7 @@
             color: #aaa;
         }
 
-        .game-window.updated {
-            border-color: #4CAF50;
-            background: #f1f8e9;
-            animation: pulse 2s ease-out;
-        }
-
-        .game-window.main-market {
-            border-left: 4px solid #2196F3;
-        }
-
-        .game-window.goals-market {
-            border-left: 4px solid #FF5722;
-        }
-
-        /* Goals Market Specific Styles */
+        /* Goals Market Specific Styles - UPDATED FOR PAIRED LAYOUT */
         .goals-casino-window {
             background: #1a1a1a;
             color: white;
@@ -323,23 +300,6 @@
             margin-bottom: 20px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
-
-        /*.goals-casino-window.updated {*/
-        /*    animation: goalsPulse 2s ease-out;*/
-        /*}*/
-
-        /*@keyframes goalsPulse {*/
-        /*    0% {*/
-        /*        background: #FF5722;*/
-        /*        transform: scale(1.01);*/
-        /*        box-shadow: 0 0 20px rgba(255, 87, 34, 0.6);*/
-        /*    }*/
-        /*    100% {*/
-        /*        background: #1a1a1a;*/
-        /*        transform: scale(1);*/
-        /*        box-shadow: 0 8px 25px rgba(0,0,0,0.3);*/
-        /*    }*/
-        /*}*/
 
         .goals-game-header {
             background: linear-gradient(135deg, #FF5722, #FF9800);
@@ -372,12 +332,40 @@
             color: #ccc;
         }
 
+        /* NEW: Paired markets container */
         .goals-markets-container {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
 
+        /* NEW: Market group for paired markets */
+        .market-group {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .market-group-title {
+            text-align: center;
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* NEW: Paired markets row */
+        .paired-markets-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        /* Modified market row for paired layout */
         .goals-market-row {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
@@ -387,11 +375,13 @@
             justify-content: space-between;
             align-items: center;
             transition: all 0.3s ease;
+            min-height: 80px;
         }
 
         .goals-market-row:hover {
             background: rgba(255,255,255,0.08);
             border-color: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
         }
 
         .goals-market-row.updated {
@@ -400,13 +390,25 @@
             animation: rowPulse 1.5s ease-out;
         }
 
+        .goals-market-row.over-market {
+            border-left: 3px solid #4CAF50;
+        }
+
+        .goals-market-row.under-market {
+            border-left: 3px solid #f44336;
+        }
+
         @keyframes rowPulse {
             0% {
                 background: rgba(76, 175, 80, 0.4);
                 transform: scale(1.02);
             }
             100% {
-                background: rgba(255,255,255,0.05);
+                background: rgba(25Goroutine stopped
+Goroutine stopped
+Goroutine stopped
+
+5,255,255,0.05);
                 transform: scale(1);
             }
         }
@@ -431,25 +433,25 @@
 
         .goals-coefficient-display {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 8px;
         }
 
         .goals-old-coeff {
-            font-size: 16px;
+            font-size: 14px;
             color: #999;
             text-decoration: line-through;
         }
 
         .goals-change-indicator {
             display: flex;
-            flex-direction: column;
             align-items: center;
+            gap: 5px;
         }
 
         .goals-change-arrow {
-            font-size: 20px;
-            margin-bottom: 2px;
+            font-size: 16px;
         }
 
         .goals-change-up { color: #4CAF50; }
@@ -465,8 +467,11 @@
             font-size: 24px;
             font-weight: bold;
             color: #4CAF50;
-            min-width: 80px;
             text-align: center;
+        }
+
+        .goals-current-coeff.under-coeff {
+            color: #f44336;
         }
 
         .goals-footer {
@@ -480,133 +485,25 @@
             color: #aaa;
         }
 
-        @keyframes pulse {
-            0% {
-                background: #4CAF50;
-                color: white;
-                transform: scale(1.02);
-            }
-            100% {
-                background: #f1f8e9;
-                color: inherit;
-                transform: scale(1);
-            }
-        }
-
-        .game-header {
-            font-weight: bold;
-            font-size: 18px;
+        /* Single market row for non-paired markets */
+        .single-market-row {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
             margin-bottom: 10px;
-            color: #333;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 8px;
         }
 
-        .game-details {
-            margin-bottom: 15px;
-        }
-
-        .event-name {
-            font-size: 16px;
-            color: #555;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .market-info {
-            font-size: 14px;
-            color: #777;
-            margin-bottom: 15px;
-            background: #e8e8e8;
-            padding: 8px 12px;
-            border-radius: 6px;
-        }
-
-        .coefficient-display {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .coeff-section {
-            text-align: center;
-            flex: 1;
-        }
-
-        .coeff-label {
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        .old-coeff {
-            font-size: 16px;
-            color: #999;
-            text-decoration: line-through;
-        }
-
-        .current-coeff {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2E7D32;
-        }
-
-        .change-indicator {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 0 20px;
-        }
-
-        .change-arrow {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        .change-up { color: #4CAF50; }
-        .change-down { color: #f44336; }
-        .change-same { color: #666; }
-
-        .change-value {
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .game-footer {
-            margin-top: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: #aaa;
-            border-top: 1px solid #e0e0e0;
-            padding-top: 10px;
-        }
-
-        .last-update {
-            font-style: italic;
-        }
-
-        .update-count {
-            background: #e0e0e0;
-            padding: 4px 8px;
-            border-radius: 12px;
-            color: #666;
-            font-weight: bold;
-        }
-
-        .no-games {
-            text-align: center;
-            color: #999;
-            padding: 40px;
-            font-style: italic;
-            font-size: 18px;
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .paired-markets-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
         }
 
         .stats-summary {
@@ -627,6 +524,14 @@
             border-radius: 5px;
             background: white;
             font-weight: bold;
+        }
+
+        .no-games {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-style: italic;
+            font-size: 18px;
         }
 
         .goals-no-data {
@@ -856,7 +761,7 @@
         // Build the window content
         const gameInfo = gameData[sport]['main'][gameId];
         const marketsHtml = Object.entries(gameInfo.markets)
-            .sort((a, b) => a[1].market.localeCompare(b[1].market)) // Sort by market name
+            .sort((a, b) => a[1].market.localeCompare(b[1].market))
             .map(([marketId, marketData]) => {
                 const change = marketData.new_coefficient - marketData.old_coefficient;
                 let changeClass = 'main-change-same';
@@ -921,6 +826,7 @@
         }, 100);
     }
 
+    // NEW: Updated function with paired markets layout
     function updateGoalsMarket(sport, data) {
         const gameId = createGameId(data);
         const marketRowId = createMarketRowId(data);
@@ -957,13 +863,10 @@
             lastUpdate: new Date()
         };
         gameData[sport]['goals'][gameId].updateCount++;
-
-        // Update counters
         updateCounts[sport]['goals']++;
 
         // Find existing window or create new one
         let gameWindow = document.getElementById(`goals_game_${gameId}`);
-
         if (!gameWindow) {
             gameWindow = document.createElement('div');
             gameWindow.id = `goals_game_${gameId}`;
@@ -971,49 +874,9 @@
             container.appendChild(gameWindow);
         }
 
-        // Add updated class for animation
-        gameWindow.classList.add('updated');
-        setTimeout(() => {
-            gameWindow.classList.remove('updated');
-        }, 2000);
-
-        // Build the window content
+        // Build the window content with paired markets
         const gameInfo = gameData[sport]['goals'][gameId];
-        const marketsHtml = Object.entries(gameInfo.markets)
-            .sort((a, b) => a[1].market.localeCompare(b[1].market)) // Sort by market name
-            .map(([marketId, marketData]) => {
-                const change = marketData.new_coefficient - marketData.old_coefficient;
-                let changeClass = 'goals-change-same';
-                let changeIcon = '➡️';
-                let changeText = '0.00';
-
-                if (change > 0) {
-                    changeClass = 'goals-change-up';
-                    changeIcon = '⬆️';
-                    changeText = `+${change.toFixed(2)}`;
-                } else if (change < 0) {
-                    changeClass = 'goals-change-down';
-                    changeIcon = '⬇️';
-                    changeText = change.toFixed(2);
-                }
-
-                return `
-                    <div class="goals-market-row" id="market_row_${gameId}_${marketId}">
-                        <div class="goals-market-info">
-                            <div class="goals-market-name">${marketData.market}</div>
-                            <div class="goals-price-name">${marketData.price}</div>
-                        </div>
-                        <div class="goals-coefficient-display">
-                            <div class="goals-old-coeff">${marketData.old_coefficient.toFixed(2)}</div>
-                            <div class="goals-change-indicator">
-                                <div class="goals-change-arrow ${changeClass}">${changeIcon}</div>
-                                <div class="goals-change-value ${changeClass}">${changeText}</div>
-                            </div>
-                            <div class="goals-current-coeff">${marketData.new_coefficient.toFixed(2)}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+        const marketsHtml = buildPairedMarketsHtml(gameInfo.markets, gameId);
 
         // Update window content
         gameWindow.innerHTML = `
@@ -1043,6 +906,114 @@
                 }, 1500);
             }
         }, 100);
+    }
+
+    // NEW: Function to build paired markets HTML
+    function buildPairedMarketsHtml(markets, gameId) {
+        // Group markets by their base type (e.g., OVER_25 and UNDER_25 go together)
+        const marketGroups = {};
+
+        Object.entries(markets).forEach(([marketId, marketData]) => {
+            const marketName = marketData.market;
+
+            // Extract the base market type (e.g., "25" from "OVER_25" or "UNDER_25")
+            let baseType = '';
+            let marketType = '';
+
+            if (marketName.startsWith('OVER')) {
+                baseType = marketName.replace('OVER', '');
+                marketType = 'over';
+            } else if (marketName.startsWith('UNDER')) {
+                baseType = marketName.replace('UNDER', '');
+                marketType = 'under';
+            } else {
+                // For markets that don't have pairs, treat separately
+                baseType = marketName;
+                marketType = 'single';
+            }
+
+            if (!marketGroups[baseType]) {
+                marketGroups[baseType] = {};
+            }
+
+            marketGroups[baseType][marketType] = { marketId, marketData };
+        });
+
+        // Build HTML for grouped markets
+        let html = '<div class="market-group"><div class="market-group-title">Total Goals</div>';
+
+        // Sort market groups by base type (0.5, 1.5, 2.5, etc.)
+        const sortedGroups = Object.keys(marketGroups).sort((a, b) => {
+            const numA = parseFloat(a.replace('_', '.'));
+            const numB = parseFloat(b.replace('_', '.'));
+            return numA - numB;
+        });
+
+        sortedGroups.forEach(baseType => {
+            const group = marketGroups[baseType];
+
+            if (group.over && group.under) {
+                // Paired markets
+                html += '<div class="paired-markets-row">';
+                html += buildMarketRowHtml(group.over, gameId, 'over-market');
+                html += buildMarketRowHtml(group.under, gameId, 'under-market');
+                html += '</div>';
+            } else if (group.single) {
+                // Single market
+                html += '<div class="single-market-row">';
+                html += buildMarketRowHtml(group.single, gameId, 'single-market');
+                html += '</div>';
+            } else {
+                // Unpaired market (only over or only under)
+                const market = group.over || group.under;
+                const className = group.over ? 'over-market' : 'under-market';
+                html += '<div class="single-market-row">';
+                html += buildMarketRowHtml(market, gameId, className);
+                html += '</div>';
+            }
+        });
+
+        html += '</div>';
+        return html;
+    }
+
+    // NEW: Function to build individual market row HTML
+    function buildMarketRowHtml(market, gameId, additionalClass = '') {
+        const { marketId, marketData } = market;
+        const change = marketData.new_coefficient - marketData.old_coefficient;
+
+        let changeClass = 'goals-change-same';
+        let changeIcon = '➡️';
+        let changeText = '0.00';
+
+        if (change > 0) {
+            changeClass = 'goals-change-up';
+            changeIcon = '⬆️';
+            changeText = `+${change.toFixed(2)}`;
+        } else if (change < 0) {
+            changeClass = 'goals-change-down';
+            changeIcon = '⬇️';
+            changeText = change.toFixed(2);
+        }
+
+        const coeffClass = additionalClass.includes('under') ? 'under-coeff' : '';
+
+        return `
+            <div class="goals-market-row ${additionalClass}" id="market_row_${gameId}_${marketId}">
+                <div class="goals-market-info">
+                    <div class="goals-market-name">${marketData.market}</div>
+                    <div class="goals-price-name">${marketData.price}</div>
+                </div>
+                <div class="goals-coefficient-display">
+                    <div class="goals-old-coeff">${marketData.old_coefficient.toFixed(2)}</div>
+                    <div class="goals-change-indicator">
+                        <div class="goals-change-arrow ${changeClass}">${changeIcon}</div>
+                        <div class="goals-change-value ${changeClass}">${changeText}</div>
+                    </div>
+                    <div class="goals-current-coeff ${coeffClass}">${marketData.new_coefficient.toFixed(2)}</div>
+                </div>
+            </div>
+        `;
     }
 
     function updateStats() {
@@ -1100,7 +1071,7 @@
 
                 subscriptions[mainChannel].subscribe();
 
-                // Subscribe to GOALS channel (all goals will come through this single channel)
+                // Subscribe to GOALS channel
                 const goalsChannel = `${sport}_goals`;
                 log(`📤 Attempting to subscribe to ${goalsChannel} channel...`);
 
