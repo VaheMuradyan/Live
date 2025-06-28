@@ -59,17 +59,23 @@ func (cg *CoefficientGenerator) startSportWithInterval(sportName string, interva
 func (cg *CoefficientGenerator) StartAllEvents() error {
 	var events []models.Event
 	var err error
-	err = db.DB.Find(&events).Error
+	err = db.DB.Preload("Competition.Country.Sport").Find(&events).Error
 
 	if err != nil {
-		return fmt.Errorf("failed to get scores from database: %v", err)
+		return fmt.Errorf("failed to get events from database: %v", err)
 	}
 
 	const sportInterval uint32 = 10
 
 	for _, e := range events {
-		if err = cg.startEvent(e.Name, sportInterval); err != nil {
-			fmt.Printf("Error starting %s: %v\n", e.Name, err)
+		// Access the sport name through the relationship chain
+		sportName := ""
+		if e.Competition.Country.Sport.Name != "" {
+			sportName = e.Competition.Country.Sport.Name
+		}
+
+		if err = cg.startEvent(e.Name, sportName, sportInterval); err != nil {
+			fmt.Printf("Error starting %s (Sport: %s): %v\n", e.Name, sportName, err)
 			break
 		}
 	}
@@ -77,10 +83,11 @@ func (cg *CoefficientGenerator) StartAllEvents() error {
 	return nil
 }
 
-func (cg *CoefficientGenerator) startEvent(eventName string, interval uint32) error {
+func (cg *CoefficientGenerator) startEvent(eventName string, sportname string, interval uint32) error {
 	req := &live.EventRequest{
 		Event:           eventName,
 		ScoreUpdateTime: interval,
+		SportName:       sportname,
 	}
 
 	resp, err := cg.client.StartEvents(context.Background(), req)

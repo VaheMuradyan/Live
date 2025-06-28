@@ -137,6 +137,7 @@ type EventRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Event           string                 `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
 	ScoreUpdateTime uint32                 `protobuf:"varint,2,opt,name=score_update_time,json=scoreUpdateTime,proto3" json:"score_update_time,omitempty"`
+	SportName       string                 `protobuf:"bytes,3,opt,name=sportName,proto3" json:"sportName,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -183,6 +184,13 @@ func (x *EventRequest) GetScoreUpdateTime() uint32 {
 		return x.ScoreUpdateTime
 	}
 	return 0
+}
+
+func (x *EventRequest) GetSportName() string {
+	if x != nil {
+		return x.SportName
+	}
+	return ""
 }
 
 type EventResponse struct {
@@ -240,10 +248,11 @@ const file_proto_coefficient_proto_rawDesc = "" +
 	"\rSportResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x14\n" +
-	"\x05sport\x18\x03 \x01(\tR\x05sport\"P\n" +
+	"\x05sport\x18\x03 \x01(\tR\x05sport\"n\n" +
 	"\fEventRequest\x12\x14\n" +
 	"\x05event\x18\x01 \x01(\tR\x05event\x12*\n" +
-	"\x11score_update_time\x18\x02 \x01(\rR\x0fscoreUpdateTime\")\n" +
+	"\x11score_update_time\x18\x02 \x01(\rR\x0fscoreUpdateTime\x12\x1c\n" +
+	"\tsportName\x18\x03 \x01(\tR\tsportName\")\n" +
 	"\rEventResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess2\x8a\x01\n" +
 	"\x12CoefficientService\x12<\n" +

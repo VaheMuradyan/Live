@@ -44,7 +44,7 @@ func (s *Server) handleGoalsMarketLifecycle(sportName string) {
 	}
 
 	for _, col := range collections {
-		s.activateGoalsMarketWithArgument(col.ID, "05")
+		s.activateGoalsMarketWithArgument(col.ID, "5")
 		s.activateGoalsMarketWithArgument(col.ID, "15")
 		s.activateGoalsMarketWithArgument(col.ID, "25")
 		s.activateGoalsMarketWithArgument(col.ID, "35")
@@ -52,28 +52,29 @@ func (s *Server) handleGoalsMarketLifecycle(sportName string) {
 	}
 
 	for _, col := range collections {
-		for _, arg := range []string{"05", "15", "25", "35", "45"} {
+		for _, arg := range []string{"5", "15", "25", "35", "45"} {
 			argCopy := arg
 			colID := col.ID
 
 			var delay time.Duration
 			switch argCopy {
-			case "05":
-				delay = 30 * time.Second
+			case "5":
+				delay = 10 * time.Second
 			case "15":
-				delay = 60 * time.Second
+				delay = 20 * time.Second
 			case "25":
-				delay = 90 * time.Second
+				delay = 30 * time.Second
 			case "35":
-				delay = 120 * time.Second
+				delay = 40 * time.Second
 			case "45":
-				delay = 150 * time.Second
+				delay = 50 * time.Second
 			}
 
 			go func(collectionID uint, argument string, d time.Duration) {
 				time.Sleep(d)
 				s.removeGoalsArgument(collectionID, argument)
 			}(colID, argCopy, delay)
+
 		}
 	}
 }

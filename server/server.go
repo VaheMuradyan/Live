@@ -13,6 +13,7 @@ import (
 	"math/rand"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/VaheMuradyan/Live/db"
@@ -21,14 +22,16 @@ import (
 
 const (
 	apiKey = "0957bfe1-5aa9-40c0-991f-d15150f91594"
-	apiUrl = "http://localhost:8000/api"
 )
 
 type Server struct {
 	live.UnimplementedCoefficientServiceServer
+	stopRoutines  sync.Map
 	sportRoutines sync.Map
+	values        sync.Map
 	cfConn        *grpc.ClientConn
 	cfClient      apiproto.CentrifugoApiClient
+	counter       atomic.Int32
 }
 
 func NewServer() *Server {
@@ -39,18 +42,32 @@ func NewServer() *Server {
 	}
 
 	client := apiproto.NewCentrifugoApiClient(conn)
-	return &Server{
+
+	server := &Server{
 		cfConn:        conn,
 		cfClient:      client,
+		stopRoutines:  sync.Map{},
 		sportRoutines: sync.Map{},
+		values:        sync.Map{},
 	}
+
+	server.counter.Store(0)
+
+	sports := []string{"Football", "Basketball", "Tennis"}
+	for _, sport := range sports {
+		server.sportRoutines.Store(sport, make(chan bool))
+		server.values.Store(sport, 5)
+	}
+	return server
 }
 
 func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) (*live.SportResponse, error) {
 	sport := req.Sport
 	interval := req.UpdateIntervalSeconds
+	value, _ := s.sportRoutines.Load(sport)
+	channel, _ := value.(chan bool)
 
-	if _, exists := s.sportRoutines.Load(sport); exists {
+	if _, exists := s.stopRoutines.Load(sport); exists {
 		return &live.SportResponse{
 			Success: false,
 			Message: fmt.Sprintf("Sport %s updates already running", sport),
@@ -59,28 +76,34 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 	}
 
 	stopChan := make(chan bool)
-	s.sportRoutines.Store(sport, stopChan)
+	s.stopRoutines.Store(sport, stopChan)
 
 	s.handleGoalsMarketLifecycle(sport)
 
-	go func(ticker *time.Ticker, sportName string, stopChan2 chan bool) {
+	go func(ticker *time.Ticker, channel2 chan bool, sportName string, stopChan2 chan bool) {
+		//todo tenam petqa miacnel esi te che
+		//defer close(channel2)
 		defer ticker.Stop()
 		for {
 			select {
 			case <-stopChan2:
 				fmt.Println("Goroutine stopped")
 				return
+			case <-channel2:
+				if err := s.generateCoefficientUpdate(sportName, true); err != nil {
+					log.Printf("Error updating coefficient for %s: %v", sport, err)
+				}
 			case <-ticker.C:
-				if err := s.generateCoefficientUpdate(sportName); err != nil {
+				if err := s.generateCoefficientUpdate(sportName, false); err != nil {
 					log.Printf("Error updating coefficient for %s: %v", sport, err)
 				}
 			}
 		}
-	}(time.NewTicker(time.Duration(interval)*time.Second), sport, stopChan)
+	}(time.NewTicker(time.Duration(interval)*time.Second), channel, sport, stopChan)
 
 	go func(sportName string) {
 		time.Sleep(160 * time.Second)
-		end2, ok := s.sportRoutines.Load(sportName)
+		end2, ok := s.stopRoutines.Load(sportName)
 		if ok {
 			if end, ok2 := end2.(chan bool); ok2 {
 				end <- true
@@ -98,12 +121,16 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 func (s *Server) StartEvents(ctx context.Context, req *live.EventRequest) (*live.EventResponse, error) {
 	event := req.Event
 	interval := req.ScoreUpdateTime
+	sportName := req.SportName
+
+	value, _ := s.sportRoutines.Load(sportName)
+	channel, _ := value.(chan bool)
 
 	stopChan := make(chan bool)
-	s.sportRoutines.Store(event, stopChan)
+	s.stopRoutines.Store(event, stopChan)
 	s.handleScoreForEvent(event)
 
-	go func(ticker *time.Ticker, eventName string, stopChan2 chan bool) {
+	go func(ticker *time.Ticker, eventName string, stopChan2 chan bool, channel2 chan bool) {
 		defer ticker.Stop()
 		for {
 			select {
@@ -111,16 +138,16 @@ func (s *Server) StartEvents(ctx context.Context, req *live.EventRequest) (*live
 				fmt.Println("Event stopped")
 				return
 			case <-ticker.C:
-				if err := s.startEvent(eventName); err != nil {
+				if err := s.startEvent(eventName, channel2); err != nil {
 					log.Printf("Error updating score for %s: %v", eventName, err)
 				}
 			}
 		}
-	}(time.NewTicker(time.Duration(interval)*time.Second), event, stopChan)
+	}(time.NewTicker(time.Duration(interval)*time.Second), event, stopChan, channel)
 
 	go func(eventName string) {
 		time.Sleep(160 * time.Second)
-		end2, ok := s.sportRoutines.Load(eventName)
+		end2, ok := s.stopRoutines.Load(eventName)
 		if ok {
 			if end, ok2 := end2.(chan bool); ok2 {
 				end <- true
@@ -133,16 +160,19 @@ func (s *Server) StartEvents(ctx context.Context, req *live.EventRequest) (*live
 	}, nil
 }
 
-func (s *Server) generateCoefficientUpdate(sport string) error {
+func (s *Server) generateCoefficientUpdate(sport string, flag bool) error {
 	var wg sync.WaitGroup
-	wg.Add(6)
+	wg.Add(5)
 
-	go func() {
-		defer wg.Done()
-		if err := s.updateMainMarkets(sport); err != nil {
-			log.Printf("Error updating MAIN markets for %s: %v", sport, err)
-		}
-	}()
+	if flag {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := s.updateMainMarkets(sport); err != nil {
+				log.Printf("Error updating MAIN markets for %s: %v", sport, err)
+			}
+		}()
+	}
 
 	params := []string{"[0.5]", "[1.5]", "[2.5]", "[3.5]", "[4.5]"}
 
@@ -236,7 +266,13 @@ func (s *Server) sendToCentrifugo(price *models.Price) error {
 	return err
 }
 
-func (s *Server) startEvent(eventName string) error {
+// todo uxarki centrifugo
+func (s *Server) startEvent(eventName string, channel chan bool) error {
+	md := metadata.New(map[string]string{
+		"authorization": "apikey " + apiKey,
+	})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
 	var score models.Score
 
 	query := `
@@ -250,6 +286,13 @@ func (s *Server) startEvent(eventName string) error {
 	if err != nil {
 		log.Printf("Error getting score for %s: %v", eventName, err)
 		return err
+	}
+	if score.Event.Name == "" {
+		err = db.DB.Preload("Event").First(&score, score.ID).Error
+		if err != nil {
+			log.Printf("Error preloading event for score ID %d: %v", score.ID, err)
+			return err
+		}
 	}
 
 	currentScoreTeam1 := score.Team1Score
@@ -276,6 +319,31 @@ func (s *Server) startEvent(eventName string) error {
 	if err != nil {
 		return err
 	}
+
+	data := map[string]interface{}{
+		"game":   score.Event.Name,
+		"score1": score.Team1Score,
+		"score2": score.Team2Score,
+		"total":  score.Total,
+	}
+
+	channelName := strings.ReplaceAll(score.Event.Name, " ", "")
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	req := &apiproto.PublishRequest{
+		Channel: channelName,
+		Data:    jsonData,
+	}
+
+	_, err = s.cfClient.Publish(ctx, req)
+
+	s.counter.Add(10)
+
+	channel <- true
 
 	return nil
 }
@@ -328,21 +396,4 @@ func (s *Server) getPricesBySport(sportName string, filterValue string, flag boo
 
 	err := query.Find(&prices).Error
 	return prices, err
-}
-
-func (s *Server) getScore(price *models.Price) (*models.Score, error) {
-	var score models.Score
-
-	err := db.DB.Table("scores").
-		Joins("JOIN events ON scores.event_id = events.id").
-		Joins("JOIN market_collections ON events.id = market_collections.event_id").
-		Joins("JOIN markets ON market_collections.id = markets.market_collection_id").
-		Where("markets.id = ?", price.MarketID).
-		First(&score).Error
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &score, nil
 }

@@ -404,11 +404,7 @@
                 transform: scale(1.02);
             }
             100% {
-                background: rgba(25Goroutine stopped
-Goroutine stopped
-Goroutine stopped
-
-5,255,255,0.05);
+                background: rgba(255,255,255,0.05);
                 transform: scale(1);
             }
         }
@@ -544,6 +540,22 @@ Goroutine stopped
             border-radius: 10px;
             border: 2px dashed rgba(255,255,255,0.1);
         }
+
+        /* Score box animation */
+        .score-updated {
+            animation: scoreFlash 1s ease-out;
+        }
+
+        @keyframes scoreFlash {
+            0% {
+                background: rgba(76, 175, 80, 0.3) !important;
+                transform: scale(1.05);
+            }
+            100% {
+                background: #1a1a1a !important;
+                transform: scale(1);
+            }
+        }
     </style>
 </head>
 <body>
@@ -564,6 +576,19 @@ Goroutine stopped
 <div class="sports-container">
     <div class="sport-section">
         <div class="sport-header football">⚽️ Football</div>
+        <div style="background: #1a1a1a; color: white; padding: 20px; border-radius: 10px; text-align: center;" id="score_ManchesterUnitedvsLiverpool" data-game="Manchester United vs Liverpool">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-size: 14px; color: #ccc;" class="team1-name">Man United</div>
+                    <div style="font-size: 24px; color: #4CAF50; font-weight: bold;" class="team1-score">0</div>
+                </div>
+                <div style="color: #aaa; margin: 0 10px;">VS</div>
+                <div>
+                    <div style="font-size: 14px; color: #ccc;" class="team2-name">Liverpool</div>
+                    <div style="font-size: 24px; color: #4CAF50; font-weight: bold;" class="team2-score">0</div>
+                </div>
+            </div>
+        </div>
         <div class="stats-summary" id="football-stats">
             <div class="stat-item">Main: 0 games, 0 updates</div>
             <div class="stat-item">Goals: 0 games, 0 updates</div>
@@ -589,6 +614,19 @@ Goroutine stopped
 
     <div class="sport-section">
         <div class="sport-header basketball">🏀 Basketball</div>
+        <div style="background: #1a1a1a; color: white; padding: 20px; border-radius: 10px; text-align: center;" id="score_LakersvsCeltics" data-game="Lakers vs Celtics">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-size: 14px; color: #ccc;" class="team1-name">Lakers</div>
+                    <div style="font-size: 24px; color: #4CAF50; font-weight: bold;" class="team1-score">0</div>
+                </div>
+                <div style="color: #aaa; margin: 0 10px;">VS</div>
+                <div>
+                    <div style="font-size: 14px; color: #ccc;" class="team2-name">Celtics</div>
+                    <div style="font-size: 24px; color: #4CAF50; font-weight: bold;" class="team2-score">0</div>
+                </div>
+            </div>
+        </div>
         <div class="stats-summary" id="basketball-stats">
             <div class="stat-item">Main: 0 games, 0 updates</div>
             <div class="stat-item">Goals: 0 games, 0 updates</div>
@@ -614,6 +652,19 @@ Goroutine stopped
 
     <div class="sport-section">
         <div class="sport-header tennis">🎾 Tennis</div>
+        <div style="background: #1a1a1a; color: white; padding: 20px; border-radius: 10px; text-align: center;" id="score_NadalvsMonfils" data-game="Nadal vs Monfils">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-size: 14px; color: #ccc;" class="team1-name">Nadal</div>
+                    <div style="font-size: 24px; color: #4CAF50; font-weight: bold;" class="team1-score">0</div>
+                </div>
+                <div style="color: #aaa; margin: 0 10px;">VS</div>
+                <div>
+                    <div style="font-size: 14px; color: #ccc;" class="team2-name">Monfils</div>
+                    <div style="font-size: 24px; color: #4CAF50; font-weight: bold;" class="team2-score">0</div>
+                </div>
+            </div>
+        </div>
         <div class="stats-summary" id="tennis-stats">
             <div class="stat-item">Main: 0 games, 0 updates</div>
             <div class="stat-item">Goals: 0 games, 0 updates</div>
@@ -642,6 +693,7 @@ Goroutine stopped
 <script>
     let centrifuge = null;
     let subscriptions = {};
+    let scoreSubscriptions = {};
     let gameData = {
         football: { main: {}, goals: {} },
         basketball: { main: {}, goals: {} },
@@ -826,7 +878,6 @@ Goroutine stopped
         }, 100);
     }
 
-    // NEW: Updated function with paired markets layout
     function updateGoalsMarket(sport, data) {
         const gameId = createGameId(data);
         const marketRowId = createMarketRowId(data);
@@ -908,7 +959,6 @@ Goroutine stopped
         }, 100);
     }
 
-    // NEW: Function to build paired markets HTML
     function buildPairedMarketsHtml(markets, gameId) {
         // Group markets by their base type (e.g., OVER_25 and UNDER_25 go together)
         const marketGroups = {};
@@ -977,7 +1027,6 @@ Goroutine stopped
         return html;
     }
 
-    // NEW: Function to build individual market row HTML
     function buildMarketRowHtml(market, gameId, additionalClass = '') {
         const { marketId, marketData } = market;
         const change = marketData.new_coefficient - marketData.old_coefficient;
@@ -1035,6 +1084,80 @@ Goroutine stopped
         });
     }
 
+    // IMPROVED SCORE UPDATE FUNCTION
+    function updateScore(data) {
+        console.log('Score update received:', data);
+        console.log('Data structure:', JSON.stringify(data, null, 2));
+
+        // Multiple strategies to find the correct score box
+        let scoreBox = null;
+
+        // Strategy 1: Try exact game name match
+        if (data.game) {
+            const gameKey = data.game.replace(/\s/g, '');
+            scoreBox = document.getElementById(`score_${gameKey}`);
+            console.log(`Strategy 1 - Looking for: score_${gameKey}`);
+        }
+
+        // Strategy 2: If not found, try to find by data-game attribute
+        if (!scoreBox && data.game) {
+            const allScoreBoxes = document.querySelectorAll('[id^="score_"]');
+            for (const box of allScoreBoxes) {
+                const dataGame = box.getAttribute('data-game');
+                if (dataGame && dataGame.toLowerCase() === data.game.toLowerCase()) {
+                    scoreBox = box;
+                    console.log(`Strategy 2 - Found match by data-game: ${dataGame}`);
+                    break;
+                }
+            }
+        }
+
+        // Strategy 3: Partial match - look for games that contain team names
+        if (!scoreBox && data.game) {
+            const allScoreBoxes = document.querySelectorAll('[id^="score_"]');
+            for (const box of allScoreBoxes) {
+                const boxId = box.id.replace('score_', '');
+                const dataGame = box.getAttribute('data-game') || '';
+
+                // Check if the data.game contains similar team names
+                if (boxId.toLowerCase().includes(data.game.toLowerCase().replace(/\s/g, '')) ||
+                    dataGame.toLowerCase().includes(data.game.toLowerCase())) {
+                    scoreBox = box;
+                    console.log(`Strategy 3 - Found partial match: ${boxId} or ${dataGame}`);
+                    break;
+                }
+            }
+        }
+
+        if (scoreBox) {
+            const team1Score = scoreBox.querySelector('.team1-score');
+            const team2Score = scoreBox.querySelector('.team2-score');
+
+            if (team1Score) {
+                team1Score.textContent = data.score1;
+                console.log(`Updated team1 score to: ${data.score1}`);
+            }
+            if (team2Score) {
+                team2Score.textContent = data.score2;
+                console.log(`Updated team2 score to: ${data.score2}`);
+            }
+
+            // Add visual feedback animation
+            scoreBox.classList.add('score-updated');
+            setTimeout(() => {
+                scoreBox.classList.remove('score-updated');
+            }, 1000);
+
+            console.log(`✅ Successfully updated ${data.game}: ${data.score1} - ${data.score2}`);
+        } else {
+            console.log(`❌ Score box not found for game: "${data.game}"`);
+            console.log('Available score boxes:');
+            document.querySelectorAll('[id^="score_"]').forEach(box => {
+                console.log(`  - ID: ${box.id}, data-game: ${box.getAttribute('data-game')}`);
+            });
+        }
+    }
+
     function connect() {
         log('🔍 Connecting to Centrifugo...');
         updateStatus('connecting', 'Connecting...');
@@ -1051,6 +1174,11 @@ Goroutine stopped
 
             // Subscribe to channels for each sport
             const sports = ['football', 'basketball', 'tennis'];
+            const gameChannels = {
+                'football': ['ManchesterUnitedvsLiverpool'],
+                'basketball': ['LakersvsCeltics'],
+                'tennis': ['NadalvsMonfils']
+            };
 
             sports.forEach(sport => {
                 // Subscribe to MAIN channel
@@ -1088,6 +1216,30 @@ Goroutine stopped
                 });
 
                 subscriptions[goalsChannel].subscribe();
+
+                // Subscribe to SCORE channels
+                if (gameChannels[sport]) {
+                    gameChannels[sport].forEach(channel => {
+                        console.log(`📤 Subscribing to score channel: ${channel}`);
+
+                        subscriptions[channel] = centrifuge.newSubscription(channel);
+
+                        subscriptions[channel].on('subscribed', function(ctx) {
+                            console.log(`✅ Subscribed to score channel: ${channel}`);
+                        });
+
+                        subscriptions[channel].on('publication', function(ctx) {
+                            console.log(`🎯 Score update from ${channel}:`, ctx.data);
+                            updateScore(ctx.data);
+                        });
+
+                        subscriptions[channel].on('error', function(ctx) {
+                            console.log(`❌ Error on score channel ${channel}:`, ctx.error);
+                        });
+
+                        subscriptions[channel].subscribe();
+                    });
+                }
             });
         });
 
@@ -1115,6 +1267,7 @@ Goroutine stopped
             centrifuge.disconnect();
             centrifuge = null;
             subscriptions = {};
+            scoreSubscriptions = {};
             updateStatus('disconnected', 'Disconnected');
         }
     }

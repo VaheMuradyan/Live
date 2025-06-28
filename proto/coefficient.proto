@@ -23,6 +23,7 @@ message SportResponse {
 message EventRequest {
   string event = 1;
   uint32 score_update_time = 2;
+  string sportName = 3;
 }
 
 message EventResponse{
