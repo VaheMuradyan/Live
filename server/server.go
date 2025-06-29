@@ -152,7 +152,7 @@ func (s *Server) StartEvents(ctx context.Context, req *live.EventRequest) (*live
 	}(time.NewTicker(time.Duration(interval)*time.Second), event, sportName, stopChan, channel)
 
 	go func(eventName string) {
-		time.Sleep(180 * time.Second)
+		time.Sleep(80 * time.Second)
 		end2, ok := s.stopRoutines.Load(eventName)
 		if ok {
 			if end, ok2 := end2.(chan bool); ok2 {
