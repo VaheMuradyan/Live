@@ -5,15 +5,22 @@ import (
 	"github.com/VaheMuradyan/Live/db"
 	live "github.com/VaheMuradyan/Live/proto"
 	mainServer "github.com/VaheMuradyan/Live/server"
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"log"
 	"net"
+	"os"
 )
 
 func main() {
 	db.Connect()
 
-	lis, err := net.Listen("tcp", ":50051")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	lis, err := net.Listen("tcp", os.Getenv("GRPC_SERVER"))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

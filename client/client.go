@@ -6,13 +6,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
+	"os"
 	"time"
 )
 
 func StartClient() {
 	time.Sleep(3 * time.Second)
 
-	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(os.Getenv("GRPC_CLIENT"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -28,6 +29,4 @@ func StartClient() {
 	if err = generaTor.StartAllEvents(); err != nil {
 		log.Fatalf("Failed to start coefficient events: %v", err)
 	}
-
-	select {}
 }

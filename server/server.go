@@ -62,7 +62,7 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 	interval := req.UpdateIntervalSeconds
 	value, _ := s.sportRoutines.Load(sport)
 	channel, _ := value.(chan bool)
-	//defer close(channel)
+
 	initial := &atomic.Int32{}
 	initial.Store(5)
 	s.counter.Store(sport, initial)
@@ -77,17 +77,18 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 
 	stopChan := make(chan bool)
 	s.stopRoutines.Store(sport, stopChan)
-	//defer close(stopChan)
 
 	goalsChan := make(chan bool)
-	//defer close(goalsChan)
 
 	s.handleGoalsMarketLifecycle(sport, goalsChan)
 
 	go func(ticker *time.Ticker, channel2 chan bool, sportName string, stopChan2 chan bool, sendGoals chan bool) {
-		//todo tenam petqa miacnel esi te che
-		//defer close(channel2)
-		defer ticker.Stop()
+		defer func() {
+			ticker.Stop()
+			close(sendGoals)
+			s.stopRoutines.Delete(sport)
+			s.counter.Delete(sport)
+		}()
 		for {
 			select {
 			case <-stopChan2:
@@ -107,16 +108,6 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 		}
 	}(time.NewTicker(time.Duration(interval)*time.Second), channel, sport, stopChan, goalsChan)
 
-	go func(sportName string) {
-		time.Sleep(160 * time.Second)
-		end2, ok := s.stopRoutines.Load(sportName)
-		if ok {
-			if end, ok2 := end2.(chan bool); ok2 {
-				end <- true
-			}
-		}
-	}(sport)
-
 	return &live.SportResponse{
 		Success: true,
 		Message: fmt.Sprintf("Started %s coefficient updates", sport),
@@ -131,18 +122,25 @@ func (s *Server) StartEvents(ctx context.Context, req *live.EventRequest) (*live
 
 	value, _ := s.sportRoutines.Load(sportName)
 	channel, _ := value.(chan bool)
-	//defer close(channel)
 
-	stopChan := make(chan bool)
-	//defer close(stopChan)
+	stopChan := make(chan bool, 1)
 	s.stopRoutines.Store(event, stopChan)
 	s.handleScoreForEvent(event)
 
-	go func(ticker *time.Ticker, eventName string, stopChan2 chan bool, channel2 chan bool) {
-		defer ticker.Stop()
+	go func(ticker *time.Ticker, eventName string, sportName2 string, stopChan2 chan bool, channel2 chan bool) {
+		defer func() {
+			ticker.Stop()
+			s.stopRoutines.Delete(eventName)
+		}()
 		for {
 			select {
 			case <-stopChan2:
+				end2, ok := s.stopRoutines.Load(sportName2)
+				if ok {
+					if end, ok2 := end2.(chan bool); ok2 {
+						end <- true
+					}
+				}
 				fmt.Println("Event stopped")
 				return
 			case <-ticker.C:
@@ -151,10 +149,10 @@ func (s *Server) StartEvents(ctx context.Context, req *live.EventRequest) (*live
 				}
 			}
 		}
-	}(time.NewTicker(time.Duration(interval)*time.Second), event, stopChan, channel)
+	}(time.NewTicker(time.Duration(interval)*time.Second), event, sportName, stopChan, channel)
 
 	go func(eventName string) {
-		time.Sleep(160 * time.Second)
+		time.Sleep(180 * time.Second)
 		end2, ok := s.stopRoutines.Load(eventName)
 		if ok {
 			if end, ok2 := end2.(chan bool); ok2 {
@@ -198,11 +196,6 @@ func (s *Server) generateCoefficientUpdate(sport string, flag bool) error {
 }
 
 func (s *Server) updateCoefficient(price *models.Price) error {
-	//score, err := s.getScore(price)
-	//if err != nil {
-	//	return err
-	//}
-
 	oldCoeff := price.CurrentCoefficient
 
 	changePercent := (rand.Float64() - 0.5) * 0.4
@@ -274,7 +267,6 @@ func (s *Server) sendToCentrifugo(price *models.Price) error {
 	return err
 }
 
-// todo uxarki centrifugo
 func (s *Server) startEvent(eventName string, channel chan bool) error {
 	md := metadata.New(map[string]string{
 		"authorization": "apikey " + apiKey,
@@ -379,8 +371,6 @@ func (s *Server) handleScoreForEvent(eventName string) {
 		log.Printf("Error updating score ID %d: %v", score.ID, err)
 	}
 }
-
-//TODO petqa querinerov prost@ grvi vor karenam haskanam vonca taeq@ hendl aneluinterval := req.UpdateIntervalSeconds
 
 func (s *Server) getPricesBySport(sportName string, filterValue string, flag bool) ([]models.Price, error) {
 	var prices []models.Price

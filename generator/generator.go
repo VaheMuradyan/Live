@@ -68,7 +68,6 @@ func (cg *CoefficientGenerator) StartAllEvents() error {
 	const sportInterval uint32 = 15
 
 	for _, e := range events {
-		// Access the sport name through the relationship chain
 		sportName := ""
 		if e.Competition.Country.Sport.Name != "" {
 			sportName = e.Competition.Country.Sport.Name

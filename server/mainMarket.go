@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"math/rand"
 )
 
 func (s *Server) updateMainMarkets(sport string) error {
@@ -15,6 +14,7 @@ func (s *Server) updateMainMarkets(sport string) error {
 		return fmt.Errorf("no active MAIN prices found for sport %s", sport)
 	}
 
-	randomPrice := prices[rand.Intn(len(prices))]
-	return s.updateCoefficient(&randomPrice)
+	_ = s.updateCoefficient(&prices[0])
+	_ = s.updateCoefficient(&prices[1])
+	return s.updateCoefficient(&prices[2])
 }

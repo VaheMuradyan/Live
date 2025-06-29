@@ -57,21 +57,21 @@ func (s *Server) handleGoalsMarketLifecycle(sportName string, goalsChan chan boo
 func (s *Server) listen(sportName string, goalsChan chan bool, collections []models.MarketCollection) {
 	for {
 		select {
-		case val, _ := <-goalsChan:
-			if val {
-				x, _ := s.counter.Load(sportName)
-				xv := x.(*atomic.Int32)
-				if xv.Load() > 45 {
-					return
-				}
-				sx := fmt.Sprintf("%v", xv.Load())
-				for _, col := range collections {
-					s.removeGoalsArgument(col.ID, sx)
-				}
-				xv.Add(10)
-			} else {
+		case val, ok := <-goalsChan:
+			if !ok || !val {
 				return
 			}
+
+			x, _ := s.counter.Load(sportName)
+			xv := x.(*atomic.Int32)
+			if xv.Load() > 45 {
+				return
+			}
+			sx := fmt.Sprintf("%v", xv.Load())
+			for _, col := range collections {
+				s.removeGoalsArgument(col.ID, sx)
+			}
+			xv.Add(10)
 		}
 	}
 }
