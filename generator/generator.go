@@ -65,7 +65,7 @@ func (cg *CoefficientGenerator) StartAllEvents() error {
 		return fmt.Errorf("failed to get events from database: %v", err)
 	}
 
-	const sportInterval uint32 = 10
+	const sportInterval uint32 = 15
 
 	for _, e := range events {
 		// Access the sport name through the relationship chain

@@ -28,10 +28,9 @@ type Server struct {
 	live.UnimplementedCoefficientServiceServer
 	stopRoutines  sync.Map
 	sportRoutines sync.Map
-	values        sync.Map
 	cfConn        *grpc.ClientConn
 	cfClient      apiproto.CentrifugoApiClient
-	counter       atomic.Int32
+	counter       sync.Map
 }
 
 func NewServer() *Server {
@@ -48,15 +47,12 @@ func NewServer() *Server {
 		cfClient:      client,
 		stopRoutines:  sync.Map{},
 		sportRoutines: sync.Map{},
-		values:        sync.Map{},
+		counter:       sync.Map{},
 	}
-
-	server.counter.Store(0)
 
 	sports := []string{"Football", "Basketball", "Tennis"}
 	for _, sport := range sports {
 		server.sportRoutines.Store(sport, make(chan bool))
-		server.values.Store(sport, 5)
 	}
 	return server
 }
@@ -66,6 +62,10 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 	interval := req.UpdateIntervalSeconds
 	value, _ := s.sportRoutines.Load(sport)
 	channel, _ := value.(chan bool)
+	//defer close(channel)
+	initial := &atomic.Int32{}
+	initial.Store(5)
+	s.counter.Store(sport, initial)
 
 	if _, exists := s.stopRoutines.Load(sport); exists {
 		return &live.SportResponse{
@@ -77,19 +77,25 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 
 	stopChan := make(chan bool)
 	s.stopRoutines.Store(sport, stopChan)
+	//defer close(stopChan)
 
-	s.handleGoalsMarketLifecycle(sport)
+	goalsChan := make(chan bool)
+	//defer close(goalsChan)
 
-	go func(ticker *time.Ticker, channel2 chan bool, sportName string, stopChan2 chan bool) {
+	s.handleGoalsMarketLifecycle(sport, goalsChan)
+
+	go func(ticker *time.Ticker, channel2 chan bool, sportName string, stopChan2 chan bool, sendGoals chan bool) {
 		//todo tenam petqa miacnel esi te che
 		//defer close(channel2)
 		defer ticker.Stop()
 		for {
 			select {
 			case <-stopChan2:
+				sendGoals <- false
 				fmt.Println("Goroutine stopped")
 				return
 			case <-channel2:
+				sendGoals <- true
 				if err := s.generateCoefficientUpdate(sportName, true); err != nil {
 					log.Printf("Error updating coefficient for %s: %v", sport, err)
 				}
@@ -99,7 +105,7 @@ func (s *Server) StartSportUpdates(ctx context.Context, req *live.SportRequest) 
 				}
 			}
 		}
-	}(time.NewTicker(time.Duration(interval)*time.Second), channel, sport, stopChan)
+	}(time.NewTicker(time.Duration(interval)*time.Second), channel, sport, stopChan, goalsChan)
 
 	go func(sportName string) {
 		time.Sleep(160 * time.Second)
@@ -125,8 +131,10 @@ func (s *Server) StartEvents(ctx context.Context, req *live.EventRequest) (*live
 
 	value, _ := s.sportRoutines.Load(sportName)
 	channel, _ := value.(chan bool)
+	//defer close(channel)
 
 	stopChan := make(chan bool)
+	//defer close(stopChan)
 	s.stopRoutines.Store(event, stopChan)
 	s.handleScoreForEvent(event)
 
@@ -341,8 +349,6 @@ func (s *Server) startEvent(eventName string, channel chan bool) error {
 
 	_, err = s.cfClient.Publish(ctx, req)
 
-	s.counter.Add(10)
-
 	channel <- true
 
 	return nil
@@ -374,7 +380,7 @@ func (s *Server) handleScoreForEvent(eventName string) {
 	}
 }
 
-//TODO petqa querinerov prost@ grvi vor karenam haskanam vonca taeq@ hendl anelu
+//TODO petqa querinerov prost@ grvi vor karenam haskanam vonca taeq@ hendl aneluinterval := req.UpdateIntervalSeconds
 
 func (s *Server) getPricesBySport(sportName string, filterValue string, flag bool) ([]models.Price, error) {
 	var prices []models.Price

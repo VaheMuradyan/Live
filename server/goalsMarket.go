@@ -6,7 +6,7 @@ import (
 	"github.com/VaheMuradyan/Live/db/models"
 	"log"
 	"math/rand"
-	"time"
+	"sync/atomic"
 )
 
 func (s *Server) updateGoalsMarkets(sport, param string) error {
@@ -28,7 +28,7 @@ func (s *Server) updateGoalsMarkets(sport, param string) error {
 	return s.updateCoefficient(&randomPrice)
 }
 
-func (s *Server) handleGoalsMarketLifecycle(sportName string) {
+func (s *Server) handleGoalsMarketLifecycle(sportName string, goalsChan chan bool) {
 	var collections []models.MarketCollection
 	err := db.DB.Preload("Event.Competition.Country.Sport").
 		Joins("JOIN events ON market_collections.event_id = events.id").
@@ -51,30 +51,27 @@ func (s *Server) handleGoalsMarketLifecycle(sportName string) {
 		s.activateGoalsMarketWithArgument(col.ID, "45")
 	}
 
-	for _, col := range collections {
-		for _, arg := range []string{"5", "15", "25", "35", "45"} {
-			argCopy := arg
-			colID := col.ID
+	go s.listen(sportName, goalsChan, collections)
+}
 
-			var delay time.Duration
-			switch argCopy {
-			case "5":
-				delay = 10 * time.Second
-			case "15":
-				delay = 20 * time.Second
-			case "25":
-				delay = 30 * time.Second
-			case "35":
-				delay = 40 * time.Second
-			case "45":
-				delay = 50 * time.Second
+func (s *Server) listen(sportName string, goalsChan chan bool, collections []models.MarketCollection) {
+	for {
+		select {
+		case val, _ := <-goalsChan:
+			if val {
+				x, _ := s.counter.Load(sportName)
+				xv := x.(*atomic.Int32)
+				if xv.Load() > 45 {
+					return
+				}
+				sx := fmt.Sprintf("%v", xv.Load())
+				for _, col := range collections {
+					s.removeGoalsArgument(col.ID, sx)
+				}
+				xv.Add(10)
+			} else {
+				return
 			}
-
-			go func(collectionID uint, argument string, d time.Duration) {
-				time.Sleep(d)
-				s.removeGoalsArgument(collectionID, argument)
-			}(colID, argCopy, delay)
-
 		}
 	}
 }
